@@ -13,3 +13,20 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+@theme {
+  --color-primary: #161A26;
+  --color-highlights: #3661E2;
+
+  --font-inter: 'inter', sans-serif;
+}
+
+@font-face {
+  font-family: 'inter';
+  src: url('/fonts/Inter_18pt-Regular.ttf');
+}
+
+.text-stroke {
+  -webkit-text-stroke: 0.5px;
+  -webkit-text-stroke-color: var(--color-highlights);
+}

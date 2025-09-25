@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { addEmigrant, getEmigrants, updateEmigrant, deleteEmigrant } from '../services/emigrantsService'
+import { addEmigrant, getEmigrants, updateEmigrant, deleteEmigrant } from '../api/emigrantsService'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import '../styles.css'
 import { FaEdit, FaTrash } from 'react-icons/fa'
