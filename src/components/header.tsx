@@ -1,17 +1,13 @@
-import React from 'react'
+import { forwardRef } from 'react'
 import { FaUser } from 'react-icons/fa'
 
-const Header = () => {
-  // State variables
-
-
-  // Event handlers
-
-
-  // Rendered UI
+const Header = forwardRef<HTMLElement>((props, ref) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-primary px-8">
-      <div className="px-4 py-3 flex items-center justify-between">
+    <header 
+      ref={ref}
+      className="sticky top-0 z-40 bg-primary border-b-2 border-highlights transition-all duration-300 ease-in-out"
+    >
+      <div className="px-8 py-3 flex items-center justify-between">
         <h1 className="text-3xl text-white font-inter text-stroke">Emigration Dashboard</h1>
         {/* User Icon */}
         <div className="relative">
@@ -22,6 +18,8 @@ const Header = () => {
       </div>
     </header>
   )
-}
+})
+
+Header.displayName = "Header"
 
 export default Header

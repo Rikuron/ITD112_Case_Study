@@ -16,6 +16,7 @@ code {
 
 @theme {
   --color-primary: #161A26;
+  --color-secondary: #2A324A;
   --color-highlights: #3661E2;
 
   --font-inter: 'inter', sans-serif;
