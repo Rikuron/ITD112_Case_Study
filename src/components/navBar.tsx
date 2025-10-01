@@ -17,7 +17,7 @@ const navigationItems = [
   }
 ]
 
-const NavBar = forwardRef<HTMLElement>((props, ref) => {
+const NavBar = forwardRef<HTMLElement>((_props, ref) => {
   // State Variables
   const { isHovering, setIsHovering, navBarWidth } = useNavBar()
 

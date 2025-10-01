@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import { FaUser } from 'react-icons/fa'
 
-const Header = forwardRef<HTMLElement>((props, ref) => {
+const Header = forwardRef<HTMLElement>((_props, ref) => {
   return (
     <header 
       ref={ref}
