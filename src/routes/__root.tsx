@@ -28,7 +28,7 @@ export const Route = createRootRoute({
             <Header ref={headerRef} />
 
             <main 
-              className="content flex-1 overflow-auto p-6" 
+              className="content flex-1 overflow-auto px-4 py-2 bg-primary" 
               role="main"
             >
               <Outlet />

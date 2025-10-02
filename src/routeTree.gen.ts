@@ -9,48 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SexRouteImport } from './routes/sex'
-import { Route as OriginRouteImport } from './routes/origin'
-import { Route as OccupationRouteImport } from './routes/occupation'
-import { Route as EducationRouteImport } from './routes/education'
-import { Route as DestiantionRouteImport } from './routes/destiantion'
-import { Route as CivilStatusRouteImport } from './routes/civilStatus'
-import { Route as AgeRouteImport } from './routes/age'
+import { Route as AddUserRouteImport } from './routes/addUser'
 import { Route as IndexRouteImport } from './routes/index'
 
-const SexRoute = SexRouteImport.update({
-  id: '/sex',
-  path: '/sex',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OriginRoute = OriginRouteImport.update({
-  id: '/origin',
-  path: '/origin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OccupationRoute = OccupationRouteImport.update({
-  id: '/occupation',
-  path: '/occupation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EducationRoute = EducationRouteImport.update({
-  id: '/education',
-  path: '/education',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DestiantionRoute = DestiantionRouteImport.update({
-  id: '/destiantion',
-  path: '/destiantion',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CivilStatusRoute = CivilStatusRouteImport.update({
-  id: '/civilStatus',
-  path: '/civilStatus',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgeRoute = AgeRouteImport.update({
-  id: '/age',
-  path: '/age',
+const AddUserRoute = AddUserRouteImport.update({
+  id: '/addUser',
+  path: '/addUser',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,128 +25,37 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/age': typeof AgeRoute
-  '/civilStatus': typeof CivilStatusRoute
-  '/destiantion': typeof DestiantionRoute
-  '/education': typeof EducationRoute
-  '/occupation': typeof OccupationRoute
-  '/origin': typeof OriginRoute
-  '/sex': typeof SexRoute
+  '/addUser': typeof AddUserRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/age': typeof AgeRoute
-  '/civilStatus': typeof CivilStatusRoute
-  '/destiantion': typeof DestiantionRoute
-  '/education': typeof EducationRoute
-  '/occupation': typeof OccupationRoute
-  '/origin': typeof OriginRoute
-  '/sex': typeof SexRoute
+  '/addUser': typeof AddUserRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/age': typeof AgeRoute
-  '/civilStatus': typeof CivilStatusRoute
-  '/destiantion': typeof DestiantionRoute
-  '/education': typeof EducationRoute
-  '/occupation': typeof OccupationRoute
-  '/origin': typeof OriginRoute
-  '/sex': typeof SexRoute
+  '/addUser': typeof AddUserRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/age'
-    | '/civilStatus'
-    | '/destiantion'
-    | '/education'
-    | '/occupation'
-    | '/origin'
-    | '/sex'
+  fullPaths: '/' | '/addUser'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/age'
-    | '/civilStatus'
-    | '/destiantion'
-    | '/education'
-    | '/occupation'
-    | '/origin'
-    | '/sex'
-  id:
-    | '__root__'
-    | '/'
-    | '/age'
-    | '/civilStatus'
-    | '/destiantion'
-    | '/education'
-    | '/occupation'
-    | '/origin'
-    | '/sex'
+  to: '/' | '/addUser'
+  id: '__root__' | '/' | '/addUser'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AgeRoute: typeof AgeRoute
-  CivilStatusRoute: typeof CivilStatusRoute
-  DestiantionRoute: typeof DestiantionRoute
-  EducationRoute: typeof EducationRoute
-  OccupationRoute: typeof OccupationRoute
-  OriginRoute: typeof OriginRoute
-  SexRoute: typeof SexRoute
+  AddUserRoute: typeof AddUserRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sex': {
-      id: '/sex'
-      path: '/sex'
-      fullPath: '/sex'
-      preLoaderRoute: typeof SexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/origin': {
-      id: '/origin'
-      path: '/origin'
-      fullPath: '/origin'
-      preLoaderRoute: typeof OriginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/occupation': {
-      id: '/occupation'
-      path: '/occupation'
-      fullPath: '/occupation'
-      preLoaderRoute: typeof OccupationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/education': {
-      id: '/education'
-      path: '/education'
-      fullPath: '/education'
-      preLoaderRoute: typeof EducationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/destiantion': {
-      id: '/destiantion'
-      path: '/destiantion'
-      fullPath: '/destiantion'
-      preLoaderRoute: typeof DestiantionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/civilStatus': {
-      id: '/civilStatus'
-      path: '/civilStatus'
-      fullPath: '/civilStatus'
-      preLoaderRoute: typeof CivilStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/age': {
-      id: '/age'
-      path: '/age'
-      fullPath: '/age'
-      preLoaderRoute: typeof AgeRouteImport
+    '/addUser': {
+      id: '/addUser'
+      path: '/addUser'
+      fullPath: '/addUser'
+      preLoaderRoute: typeof AddUserRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,13 +70,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AgeRoute: AgeRoute,
-  CivilStatusRoute: CivilStatusRoute,
-  DestiantionRoute: DestiantionRoute,
-  EducationRoute: EducationRoute,
-  OccupationRoute: OccupationRoute,
-  OriginRoute: OriginRoute,
-  SexRoute: SexRoute,
+  AddUserRoute: AddUserRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
