@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import AgeCharts from '../components/charts/ageCharts';
-// import CivilStatusCharts from '../components/charts/CivilStatusCharts';
+import CivilStatusCharts from '../components/charts/civilStatusCharts';
 // import DestinationCharts from '../components/charts/DestinationCharts';
 // import EducationCharts from '../components/charts/EducationCharts';
 // import OccupationCharts from '../components/charts/OccupationCharts';
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/')({
 
 const chartComponents = {
   age: <AgeCharts />,
-  // civil_status: <CivilStatusCharts />,
+  civil_status: <CivilStatusCharts />,
   // destination: <DestinationCharts />,
   // education: <EducationCharts />,
   // occupation: <OccupationCharts />,
