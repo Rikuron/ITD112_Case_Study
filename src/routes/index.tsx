@@ -6,6 +6,7 @@ import CivilStatusCharts from '../components/charts/civilStatusCharts';
 import EducationCharts from '../components/charts/educationCharts';
 // import OccupationCharts from '../components/charts/OccupationCharts';
 import SexCharts from '../components/charts/sexCharts';
+// import OriginCharts from '../components/charts/originCharts';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -18,12 +19,13 @@ const chartComponents = {
   education: <EducationCharts />,
   // occupation: <OccupationCharts />,
   sex: <SexCharts />,
+  // origin: <OriginCharts />,
 };
 
 type ChartKey = keyof typeof chartComponents;
 
 function Index() {
-  const [selectedChart, setSelectedChart] = useState<ChartKey>('sex');
+  const [selectedChart, setSelectedChart] = useState<ChartKey>('age');
 
   return (
     <div className="p-6 bg-primary min-h-screen">

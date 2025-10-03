@@ -18,6 +18,7 @@ interface PopulationPyramidData {
   MALE: number
   FEMALE: number
   MaleNegative: number
+  [key: string]: string | number
 }
 
 interface ScatterPlotData {
