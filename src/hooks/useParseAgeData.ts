@@ -41,7 +41,7 @@ export const useParseAgeData = (csvPath: string): UseParseAgeDataReturn => {
         setAgeGroups(allAgeGroups)
 
         // Get all year columns
-        // Get all cells from first row except first
+        // Get all cells from first row except first cell
         const yearColumns = Object.keys(rawData[0]).filter(key => key !== 'AGE_GROUP')
 
         // Transform data into structured format

@@ -4,7 +4,7 @@ import AgeCharts from '../components/charts/ageCharts';
 import CivilStatusCharts from '../components/charts/civilStatusCharts';
 // import DestinationCharts from '../components/charts/DestinationCharts';
 import EducationCharts from '../components/charts/educationCharts';
-// import OccupationCharts from '../components/charts/OccupationCharts';
+import OccupationCharts from '../components/charts/occupationCharts';
 import SexCharts from '../components/charts/sexCharts';
 // import OriginCharts from '../components/charts/originCharts';
 
@@ -17,7 +17,7 @@ const chartComponents = {
   civil_status: <CivilStatusCharts />,
   // destination: <DestinationCharts />,
   education: <EducationCharts />,
-  // occupation: <OccupationCharts />,
+  occupation: <OccupationCharts />,
   sex: <SexCharts />,
   // origin: <OriginCharts />,
 };
@@ -25,7 +25,7 @@ const chartComponents = {
 type ChartKey = keyof typeof chartComponents;
 
 function Index() {
-  const [selectedChart, setSelectedChart] = useState<ChartKey>('age');
+  const [selectedChart, setSelectedChart] = useState<ChartKey>('occupation');
 
   return (
     <div className="p-6 bg-primary min-h-screen">
@@ -39,7 +39,7 @@ function Index() {
             className="block w-full max-w-xs p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-white"
           >
             {Object.keys(chartComponents).map((key) => (
-              <option key={key} value={key}>
+              <option key={key} className='bg-primary text-white' value={key}>
                 {key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </option>
             ))}
