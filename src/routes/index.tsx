@@ -3,7 +3,7 @@ import { useState } from 'react';
 import AgeCharts from '../components/charts/ageCharts';
 import CivilStatusCharts from '../components/charts/civilStatusCharts';
 // import DestinationCharts from '../components/charts/DestinationCharts';
-// import EducationCharts from '../components/charts/EducationCharts';
+import EducationCharts from '../components/charts/educationCharts';
 // import OccupationCharts from '../components/charts/OccupationCharts';
 // import SexCharts from '../components/charts/SexCharts';
 
@@ -15,7 +15,7 @@ const chartComponents = {
   age: <AgeCharts />,
   civil_status: <CivilStatusCharts />,
   // destination: <DestinationCharts />,
-  // education: <EducationCharts />,
+  education: <EducationCharts />,
   // occupation: <OccupationCharts />,
   // sex: <SexCharts />,
 };

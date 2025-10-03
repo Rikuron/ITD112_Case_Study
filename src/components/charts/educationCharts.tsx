@@ -10,36 +10,35 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
-import { useParseAgeData } from '../../hooks/useParseAgeData'
+import { useParseEducationData } from '../../hooks/useParseEducationData'
 
 
-const ageDataCSV = '/data/Emigrant-1981-2020-Age.csv'
+const educationDataCSV = '/data/Emigrant-1988-2020-Educ.csv'
 
 
-const AgeCharts = () => {
-  const { chartData, groupedChartData, ageGroups, loading } = useParseAgeData(ageDataCSV)
+const EducationCharts = () => {
+  const { chartData, groupedChartData, educationLevels, loading } = useParseEducationData(educationDataCSV)
 
   // Show loading message
   if (loading) return <div>Loading...</div>
 
   const colors = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F',
-    '#FFBB28', '#FF8042', '#A4DE6C', '#D0ED57', '#FFC0CB', '#B22222',
-    '#4682B4', '#DDA0DD'
+    '#FFBB28', '#DDA0DD'
   ]
 
   return (
     <div className="grid grid-cols-1 gap-8">
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Age Group (1981 - 2020)</h2>
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Education Level (1988 - 2020)</h2>
 
         <ResponsiveContainer width="100%" height={525}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
             <XAxis dataKey="Year" angle={-45} textAnchor="end" height={70} />
             <YAxis 
-              domain={[0, 25000]}
+              domain={[0, 50000]}
               tickCount={11}
             />
             <Tooltip 
@@ -60,8 +59,8 @@ const AgeCharts = () => {
             />
             <Legend wrapperStyle={{ zIndex: 1 }} />
 
-            {ageGroups.map((ageGroup, i) => (
-              <Line key={ageGroup} type="monotone" dataKey={ageGroup} stroke={colors[i % colors.length]} name={ageGroup} />
+            {educationLevels.map((educationLevel, i) => (
+              <Line key={educationLevel} type="monotone" dataKey={educationLevel} stroke={colors[i % colors.length]} name={educationLevel} />
             ))}
           </LineChart>
         </ResponsiveContainer>
@@ -69,13 +68,13 @@ const AgeCharts = () => {
 
       {/* Stacked Bar Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigrants by Age Group (1981 - 2020)</h2>
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigrants by Education Level (1988 - 2020)</h2>
         <ResponsiveContainer width="100%" height={500}>
           <BarChart data={groupedChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke='#4a5568'  />
             <XAxis dataKey="Period" />
             <YAxis 
-              domain={[0, 500000]}
+              domain={[0, 300000]}
               tickCount={11}
             />
             <Legend  />
@@ -95,8 +94,8 @@ const AgeCharts = () => {
                 marginBottom: '8px'
               }}
             />
-            {ageGroups.map((ageGroup, i) => (
-              <Bar key={ageGroup} dataKey={ageGroup} stackId="a" fill={colors[i % colors.length]} name={ageGroup} />
+            {educationLevels.map((educationLevel, i) => (
+              <Bar key={educationLevel} dataKey={educationLevel} stackId="a" fill={colors[i % colors.length]} name={educationLevel} />
             ))}
           </BarChart>
         </ResponsiveContainer>
@@ -105,4 +104,4 @@ const AgeCharts = () => {
   )
 }
 
-export default AgeCharts
+export default EducationCharts
