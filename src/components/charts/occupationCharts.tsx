@@ -9,6 +9,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import { useParseOccupationData } from '../../hooks/useParseOccupationData'
+import TreemapNivo from './treemapNivo'
 
 
 const occupationDataCSV = '/data/Emigrant-1981-2020-Occu.csv'
@@ -38,7 +39,7 @@ const customTooltipFormatter = (value: any, name: string) => {
 } 
 
 const OccupationCharts = () => {
-  const { chartData, occupations, loading } = useParseOccupationData(occupationDataCSV)
+  const { chartData, occupations, treemapData, loading } = useParseOccupationData(occupationDataCSV)
 
   // Show loading message
   if (loading) return <div>Loading...</div>
@@ -89,6 +90,18 @@ const OccupationCharts = () => {
         </ResponsiveContainer>
 
       </div>
+
+
+      {/* Treemap Chart */}
+      <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Total Emigration Composition By Occupation Category (1981 - 2020)</h2>
+        <TreemapNivo 
+          key={`treemap-${treemapData.length}`}
+          data={treemapData} 
+          occupationLabelMap={occupationLabelMap} 
+        />
+      </div>
+
 
     </div>
   )

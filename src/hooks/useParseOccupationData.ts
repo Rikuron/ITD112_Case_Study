@@ -6,15 +6,22 @@ interface TransformedOccupationData {
   [occupation: string]: number
 }
 
+interface TreemapData {
+  name: string
+  value: number
+}
+
 interface UseParseOccupationDataReturn {
   chartData: TransformedOccupationData[]
   occupations: string[]
+  treemapData: TreemapData[]
   loading: boolean
 }
 
 export const useParseOccupationData = (csvPath: string): UseParseOccupationDataReturn => {
   const [chartData, setChartData] = useState<TransformedOccupationData[]>([])
   const [occupations, setOccupations] = useState<string[]>([])
+  const [treemapData, setTreemapData] = useState<TreemapData[]>([])
   const [loading, setLoading] = useState(true)
 
   // Hook to Parse Occupation Data
@@ -51,6 +58,25 @@ export const useParseOccupationData = (csvPath: string): UseParseOccupationDataR
         })
 
         setChartData(transformed)
+
+        // Calculate totals for treemap
+        const totals: { [key: string]: number } = {}
+        allOccupations.forEach(occupation => {
+          totals[occupation] = 0
+        })
+
+        transformed.forEach(yearData => {
+          allOccupations.forEach(occupation => {
+            totals[occupation] += yearData[occupation]
+          })
+        })
+
+        const treemap = allOccupations.map(occupation => ({
+          name: occupation,
+          value: totals[occupation]
+        }))
+
+        setTreemapData(treemap)
         setLoading(false)
       }
     })
@@ -59,6 +85,7 @@ export const useParseOccupationData = (csvPath: string): UseParseOccupationDataR
   return {
     chartData,
     occupations,
+    treemapData,
     loading
   }
 }
