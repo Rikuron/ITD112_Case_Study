@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import AgeCharts from '../components/charts/ageCharts';
 import CivilStatusCharts from '../components/charts/civilStatusCharts';
-// import DestinationCharts from '../components/charts/DestinationCharts';
+import DestinationCharts from '../components/charts/destinationCharts';
 import EducationCharts from '../components/charts/educationCharts';
 import OccupationCharts from '../components/charts/occupationCharts';
 import SexCharts from '../components/charts/sexCharts';
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/')({
 const chartComponents = {
   age: <AgeCharts />,
   civil_status: <CivilStatusCharts />,
-  // destination: <DestinationCharts />,
+  destination: <DestinationCharts />,
   education: <EducationCharts />,
   occupation: <OccupationCharts />,
   sex: <SexCharts />,
@@ -25,7 +25,7 @@ const chartComponents = {
 type ChartKey = keyof typeof chartComponents;
 
 function Index() {
-  const [selectedChart, setSelectedChart] = useState<ChartKey>('occupation');
+  const [selectedChart, setSelectedChart] = useState<ChartKey>('destination');
 
   return (
     <div className="p-6 bg-primary min-h-screen">
