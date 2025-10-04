@@ -16,14 +16,21 @@ interface TransformedMajorDestinationData {
   OTHERS: number
 }
 
+interface BarChartData {
+  country: string
+  total: number
+}
+
 interface UseParseMajorDestinationDataReturn {
   chartData: TransformedMajorDestinationData[]
+  barChartData: BarChartData[]
   countries: string[]
   loading: boolean
 }
 
 export const useParseMajorDestinationData = (csvPath: string): UseParseMajorDestinationDataReturn => {
   const [chartData, setChartData] = useState<TransformedMajorDestinationData[]>([])
+  const [barChartData, setBarChartData] = useState<BarChartData[]>([])
   const [countries, setCountries] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -63,7 +70,27 @@ export const useParseMajorDestinationData = (csvPath: string): UseParseMajorDest
           return yearData
         })
 
+        // Calculate totals for bar chart
+        const totals: { [key: string]: number } = {}
+        allCountries.forEach(country => {
+          totals[country] = 0
+        })
+        
+        transformed.forEach(yearData => {
+          allCountries.forEach(country => {
+            totals[country] += yearData[country as keyof TransformedMajorDestinationData] as number
+          })
+        })
+        
+        // Convert totals to bar chart data
+        const barChartData = allCountries.map(country => ({
+          country,
+          total: totals[country]
+        })).sort((a, b) => b.total - a.total) // Sort by total in descending order
+
+
         setChartData(transformed)
+        setBarChartData(barChartData)
         setLoading(false) 
       }
     })
@@ -72,6 +99,7 @@ export const useParseMajorDestinationData = (csvPath: string): UseParseMajorDest
 
   return {
     chartData,
+    barChartData,
     countries,
     loading
   }
