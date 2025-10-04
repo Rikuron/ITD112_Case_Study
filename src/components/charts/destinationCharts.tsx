@@ -12,7 +12,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import { useParseMajorDestinationData } from '../../hooks/useParseMajorDestinationData'
-
+import ChoroplethMap from './choroplethMap'
 
 // const allDestinationDataCSV = '/data/Emigrant-1981-2020-AllCountries.csv'
 const majorDestinationDataCSV = '/data/Emigrant-1981-2020-MajorCountry.csv'
@@ -71,6 +71,9 @@ const DestinationCharts = () => {
 
   return (
     <div className="grid grid-cols-1 gap-8">
+      {/* Choropleth Map */}
+      <ChoroplethMap />
+
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By MAJOR Destination Country (1981 - 2020)</h2>
