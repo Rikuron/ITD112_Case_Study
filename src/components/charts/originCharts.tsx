@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import OriginChoropleth from './originChoropleth'
 import { useParseOriginData } from '../../hooks/useParseOriginData'
 
 const originDataCSV = '/data/Emigrant-1988-2020-PlaceOfOrigin.csv'
@@ -188,7 +189,8 @@ const OriginCharts = () => {
         </ResponsiveContainer>
       </div>
 
-      
+      {/* Choropleth Map */}
+      <OriginChoropleth />
     </div>
   )
 }
