@@ -2,26 +2,30 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useRef } from 'react'
 import { uploadAgeCSVToFirebase } from '../utils/uploadAgeData'
 import { uploadEducationCSVToFirebase } from '../utils/uploadEducationData'
+import { uploadOccupationCSVToFirebase } from '../utils/uploadOccupationData'
 
 export const Route = createFileRoute('/uploadData')({
   component: UploadData,
 })
 
-type DataType = 'age' | 'education'
+type DataType = 'age' | 'education' | 'occupation'
 
 function UploadData() {
   const [uploading, setUploading] = useState<DataType | null>(null)
   const [messages, setMessages] = useState<Record<DataType, { type: 'success' | 'error' | 'info'; text: string } | null>>({
     age: null,
-    education: null
+    education: null,
+    occupation: null
   })
   const [selectedFiles, setSelectedFiles] = useState<Record<DataType, File | null>>({
     age: null,
-    education: null
+    education: null,
+    occupation: null
   })
   const fileInputRefs = {
     age: useRef<HTMLInputElement>(null),
-    education: useRef<HTMLInputElement>(null)
+    education: useRef<HTMLInputElement>(null),
+    occupation: useRef<HTMLInputElement>(null)
   }
 
   const handleFileSelect = (type: DataType, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,6 +53,8 @@ function UploadData() {
         result = await uploadAgeCSVToFirebase(selectedFile)
       } else if (type === 'education') {
         result = await uploadEducationCSVToFirebase(selectedFile)
+      } else if (type === 'occupation') {
+        result = await uploadOccupationCSVToFirebase(selectedFile)
       }
       
       setMessages(prev => ({ 
@@ -228,6 +234,66 @@ function UploadData() {
                  messages.education.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
               </p>
               <p>{messages.education.text}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Occupation Data Upload Card */}
+        <div className="bg-primary rounded-lg shadow-lg p-6 border-2 border-highlights">
+          <h2 className="text-2xl font-bold text-white mb-2">Occupation Data</h2>
+          <p className="text-gray-400 mb-4 text-sm">Upload emigrant occupation data (1981-2020)</p>
+
+          <div className="mb-4">
+            <label className="block text-white font-semibold mb-2 text-sm">Select CSV File</label>
+            <input
+              ref={fileInputRefs.occupation}
+              type="file"
+              accept=".csv"
+              onChange={(e) => handleFileSelect('occupation', e)}
+              disabled={uploading !== null}
+              className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
+                      file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                      file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                      hover:file:opacity-90 disabled:opacity-50"
+            />
+            {selectedFiles.occupation && (
+              <p className="mt-2 text-xs text-gray-300">
+                Selected: <span className="text-highlights">{selectedFiles.occupation.name}</span>
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4 p-3 bg-secondary rounded border border-highlights">
+            <h3 className="text-white font-semibold mb-2 text-sm">📋 Requirements:</h3>
+            <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+              <li>Must have "Occupation" column</li>
+              <li>14 occupation types required</li>
+              <li>Year columns (1981-2020)</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={() => handleUpload('occupation')}
+            disabled={uploading !== null || !selectedFiles.occupation}
+            className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
+                    hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          >
+            {uploading === 'occupation' ? '⏳ Uploading...' : '🚀 Upload'}
+          </button>
+
+          {messages.occupation && (
+            <div className={`mt-4 p-3 rounded-lg border text-xs ${
+              messages.occupation.type === 'success' 
+                ? 'bg-green-500/20 border-green-500 text-green-300' 
+                : messages.occupation.type === 'error'
+                ? 'bg-red-500/20 border-red-500 text-red-300'
+                : 'bg-blue-500/20 border-blue-500 text-blue-300'
+            }`}>
+              <p className="font-semibold mb-1">
+                {messages.occupation.type === 'success' ? '✅ Success!' : 
+                messages.occupation.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+              </p>
+              <p>{messages.occupation.text}</p>
             </div>
           )}
         </div>

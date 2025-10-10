@@ -11,10 +11,6 @@ import {
 import { useParseOccupationData } from '../../hooks/useParseOccupationData'
 import TreemapNivo from './treemapNivo'
 
-
-const occupationDataCSV = '/data/Emigrant-1981-2020-Occu.csv'
-
-
 const occupationLabelMap: Record<string, string> = {
   "Prof'l": "Prof'l, Tech'l, & Related Workers",
   "Managerial": "Managerial, Executive, and Administrative Workers",
@@ -39,10 +35,23 @@ const customTooltipFormatter = (value: any, name: string) => {
 } 
 
 const OccupationCharts = () => {
-  const { chartData, occupations, treemapData, loading } = useParseOccupationData(occupationDataCSV)
+  const { chartData, occupations, treemapData, loading, error } = useParseOccupationData()
 
   // Show loading message
-  if (loading) return <div>Loading...</div>
+  if (loading) return (
+    <div className="text-white text-center p-8">
+      <div className="animate-pulse">Loading occupation data from Firebase...</div>
+    </div>
+  )
+
+  if (error) {
+    return (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+        <p className="font-bold">⚠️ Error Loading Data</p>
+        <p>{error}</p>
+      </div>
+    )
+  }  
 
   const colors = [
     '#1e90ff', '#32cd32', '#ff8c00', '#8a2be2', '#ff1493', 
