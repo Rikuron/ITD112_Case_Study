@@ -3,6 +3,7 @@ import { AiFillDashboard } from 'react-icons/ai'
 import { HiUserAdd } from 'react-icons/hi'
 import { IoMenu, IoSettingsOutline } from 'react-icons/io5'
 import { useNavBar } from '../context/navBarContext'
+import { Link } from '@tanstack/react-router'
 
 const navigationItems = [
   {
@@ -11,9 +12,9 @@ const navigationItems = [
     path: '/',
   },
   {
-    name: 'Add User',
+    name: 'Add Data',
     icon: <HiUserAdd className="text-white text-2xl" />,
-    path: '/add-user',
+    path: '/uploadData',
   }
 ]
 
@@ -47,10 +48,14 @@ const NavBar = forwardRef<HTMLElement>((_props, ref) => {
           
           <div className="flex flex-col items-start gap-6 w-full p-3">
             {navigationItems.map((item) => (
-              <button key={item.name} className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg transition-colors w-full hover:cursor-pointer duration-300 ease-in-out" onClick={handleMouseEnter}>
+              <Link 
+              key={item.name} 
+              to={item.path}
+              className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg transition-colors w-full hover:cursor-pointer duration-300 ease-in-out"
+              >
                 <span className={`flex-shrink-0 ${isHovering ? 'ml-3' : 'mx-auto'}`}>{item.icon}</span>
                 {isHovering && <span className="text-white text-sm whitespace-nowrap overflow-hidden">{item.name}</span>}
-              </button>
+              </Link>
             ))}
           </div>
         </div>

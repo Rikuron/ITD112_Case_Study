@@ -12,15 +12,21 @@ import {
 } from 'recharts'
 import { useParseAgeData } from '../../hooks/useParseAgeData'
 
-
-const ageDataCSV = '/data/Emigrant-1981-2020-Age.csv'
-
-
 const AgeCharts = () => {
-  const { chartData, groupedChartData, ageGroups, loading } = useParseAgeData(ageDataCSV)
+  const { chartData, groupedChartData, ageGroups, loading, error } = useParseAgeData()
 
   // Show loading message
   if (loading) return <div>Loading...</div>
+
+  // Error message
+  if (error) {
+    return (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+        <p className="font-bold">Error:</p>
+        <p>{error}</p>
+      </div>
+    )
+  }
 
   const colors = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F',
