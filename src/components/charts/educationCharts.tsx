@@ -12,15 +12,21 @@ import {
 } from 'recharts'
 import { useParseEducationData } from '../../hooks/useParseEducationData'
 
-
-const educationDataCSV = '/data/Emigrant-1988-2020-Educ.csv'
-
-
 const EducationCharts = () => {
-  const { chartData, groupedChartData, educationLevels, loading } = useParseEducationData(educationDataCSV)
+  const { chartData, groupedChartData, educationLevels, loading, error } = useParseEducationData()
 
   // Show loading message
   if (loading) return <div>Loading...</div>
+
+  // Error message
+  if (error) {
+    return (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+        <p className="font-bold">Error:</p>
+        <p>{error}</p>
+      </div>
+    )
+  }
 
   const colors = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F',

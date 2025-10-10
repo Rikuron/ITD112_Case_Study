@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Papa from 'papaparse'
+import { getAllEducationData } from '../api/educationService'
 
 interface TransformedEducationData {
   Year: number
@@ -16,124 +16,92 @@ interface UseParseEducationDataReturn {
   groupedChartData: GroupedEducationData[]
   educationLevels: string[]
   loading: boolean
+  error: string | null
 }
 
-// Mappings for combining education levels
-const educationLevelMappings: Record<string, string[]> = {
-  "Non-Formal Education": ["No Formal Education", "Non-Formal Education "],
-  "Elementary": ["Elementary Level", "Elementary Graduate"],
-  "High School": ["High School Level", "High School Graduate"],
-  "Vocational": ["Vocational Level", "Vocational Graduate"],
-  "College": ["College Level", "College Graduate"],
-  "Post Graduate": ["Post Graduate Level", "Post Graduate"]
-}
-
-// Education Levels not merged
-const unmappedLevels = [
-  "Not of Schooling Age",
-  "Not Reported / No Response"
-]
-
-export const useParseEducationData = (csvPath: string): UseParseEducationDataReturn => {
+export const useParseEducationData = (): UseParseEducationDataReturn => {
   const [chartData, setChartData] = useState<TransformedEducationData[]>([])
   const [groupedChartData, setGroupedChartData] = useState<GroupedEducationData[]>([])
   const [educationLevels, setEducationLevels] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Hook to Parse Education Data
   useEffect(() => {
-    Papa.parse(csvPath, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const rawData = results.data as Record<string, string>[]
+    fetchFromFirebase()
+  }, [])
+  
+  // Fetch from Firebase
+  const fetchFromFirebase = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        // If data is empty, return
-        if (rawData.length === 0) return
+      console.log('Fetching age data from Firebase...')
+      const data = await getAllEducationData()
 
-        // Extract Education Levels from first column
-        const allEducationLevels = rawData.map((row) => row['EDUCATIONAL ATTAINMENT']).filter(Boolean)
-        setEducationLevels(allEducationLevels)
+      if (data.length === 0) {
+        console.warn('No age data found in Firebase. Please upload data first.')
+        setLoading(false)
+        return
+      }
 
-        // Get all year columns
-        // Get all cells from first row except first
-        const yearColumns = Object.keys(rawData[0]).filter(key => key !== 'EDUCATIONAL ATTAINMENT')
-      
-        // Transform data into structured format
-        const transformed = yearColumns.map((year) => {
-          const yearData: TransformedEducationData = { Year: parseInt(year, 10) }
+      // Extract age groups from first data entry
+      const firstEntry = data[0]
+      const allEducationLevels = Object.keys(firstEntry).filter(key => key !== 'Year')
+      setEducationLevels(allEducationLevels)
 
-          rawData.forEach(row => {
-            const educationLevel = row['EDUCATIONAL ATTAINMENT']
-            const value = parseInt(row[year], 10)
-            if (educationLevel) yearData[educationLevel] = isNaN(value) ? 0 : value
-          })
+      // Group data into 3 year periods for Bar Chart
+      const groupedData = createGroupedData(data, allEducationLevels)
 
-          return yearData
-        })
+      setChartData(data)
+      setGroupedChartData(groupedData)
+      setLoading(false)
+      console.log('Successfully loaded data from Firebase')
+    } catch (err) {
+      console.error('Error fetching education data from Firebase:', err)
+      setError('Failed to load education data from Firebase')
+      setLoading(false)
+    }
+  }
 
-        // Create new aggregated Education Levels
-        const aggregatedEducationLevels = [...Object.keys(educationLevelMappings), ...unmappedLevels]
-        setEducationLevels(aggregatedEducationLevels)
+  const createGroupedData = (
+    transformed: TransformedEducationData[],
+    allEducationLevels: string[]
+  ): GroupedEducationData[] => {
+    const groupedData: GroupedEducationData[] = []
+    const startYear = 1988
+    const endYear = 2020
 
-        // Aggregate data based on new Education Levels
-        const aggregatedData = transformed.map(yearData => {
-          const newYearData: TransformedEducationData = { Year: yearData.Year }
+    for (let year = startYear; year <= endYear; year += 3) {
+      const periodEnd = Math.min(year + 2, endYear)
+      const periodLabel = `${year} - ${periodEnd}`
+      const periodData: GroupedEducationData = { Period: periodLabel }
 
-          for (const newEducationLevel in educationLevelMappings) {
-            const oldEducationLevels = educationLevelMappings[newEducationLevel]
+      allEducationLevels.forEach(educationLevel => {
+        let sum = 0
 
-            newYearData[newEducationLevel] = oldEducationLevels.reduce((sum, oldEducationLevel) => {
-              return sum + (yearData[oldEducationLevel] || 0)
-            }, 0)
+        for (let y = year; y <= periodEnd; y++) {
+          const yearData = transformed.find(e => e.Year === y)
+          if (yearData && yearData[educationLevel]) {
+            sum += yearData[educationLevel] as number
           }
-
-          unmappedLevels.forEach(level => {
-            newYearData[level] = yearData[level] || 0
-          })
-
-          return newYearData
-        })
-
-        // Group data into 3-year Periods for Stacked Bar Chart
-        const groupedData: GroupedEducationData[] = []
-        const startYear = 1988
-        const endYear = 2020
-
-        for (let year = startYear; year <= endYear; year += 3) {
-          const periodEnd = Math.min(year + 2, endYear)
-          const periodLabel = `${year} - ${periodEnd}`
-          const periodData: GroupedEducationData = { Period: periodLabel}
-
-          // Sum up all values for each Education Level in this period
-          aggregatedEducationLevels.forEach(educationLevel => {
-            let sum = 0
-
-            for (let y = year; y <= periodEnd; y++) {
-              const yearData = aggregatedData.find(t => t.Year === y)
-              if (yearData && yearData[educationLevel]) {
-                sum += yearData[educationLevel] as number
-              }
-            }
-
-            periodData[educationLevel] = sum
-          })
-
-          groupedData.push(periodData) 
         }
 
-        setChartData(aggregatedData)
-        setGroupedChartData(groupedData)
-        setLoading(false)
-      }
-    })
-  }, [csvPath])
-  
+        periodData[educationLevel] = sum
+      })
+
+      groupedData.push(periodData)
+    }
+
+    return groupedData
+  }
+
   return {
     chartData,
     groupedChartData,
     educationLevels,
-    loading
+    loading,
+    error
   }
 }

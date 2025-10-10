@@ -1,49 +1,75 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useRef } from 'react'
 import { uploadAgeCSVToFirebase } from '../utils/uploadAgeData'
+import { uploadEducationCSVToFirebase } from '../utils/uploadEducationData'
 
 export const Route = createFileRoute('/uploadData')({
   component: UploadData,
 })
 
-function UploadData() {
-  const [uploading, setUploading] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+type DataType = 'age' | 'education'
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+function UploadData() {
+  const [uploading, setUploading] = useState<DataType | null>(null)
+  const [messages, setMessages] = useState<Record<DataType, { type: 'success' | 'error' | 'info'; text: string } | null>>({
+    age: null,
+    education: null
+  })
+  const [selectedFiles, setSelectedFiles] = useState<Record<DataType, File | null>>({
+    age: null,
+    education: null
+  })
+  const fileInputRefs = {
+    age: useRef<HTMLInputElement>(null),
+    education: useRef<HTMLInputElement>(null)
+  }
+
+  const handleFileSelect = (type: DataType, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      setSelectedFile(file)
-      setMessage(null)
+      setSelectedFiles(prev => ({ ...prev, [type]: file }))
+      setMessages(prev => ({ ...prev, [type]: null }))
     }
   }
 
-  const handleUpload = async () => {
+  const handleUpload = async (type: DataType) => {
+    const selectedFile = selectedFiles[type]
+    
     if (!selectedFile) {
-      setMessage({ type: 'error', text: 'Please select a file first' })
+      setMessages(prev => ({ ...prev, [type]: { type: 'error', text: 'Please select a file first' } }))
       return
     }
 
-    setUploading(true)
-    setMessage({ type: 'info', text: 'Uploading and validating data...' })
+    setUploading(type)
+    setMessages(prev => ({ ...prev, [type]: { type: 'info', text: 'Uploading and validating data...' } }))
     
     try {
-      const result = await uploadAgeCSVToFirebase(selectedFile)
-      setMessage({ 
-        type: 'success', 
-        text: `${result.message}. You can now view the charts!` 
-      })
-      setSelectedFile(null)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      let result
+      if (type === 'age') {
+        result = await uploadAgeCSVToFirebase(selectedFile)
+      } else if (type === 'education') {
+        result = await uploadEducationCSVToFirebase(selectedFile)
+      }
+      
+      setMessages(prev => ({ 
+        ...prev, 
+        [type]: { 
+          type: 'success', 
+          text: `${result!.message}. You can now view the charts!` 
+        }
+      }))
+      setSelectedFiles(prev => ({ ...prev, [type]: null }))
+      if (fileInputRefs[type].current) fileInputRefs[type].current!.value = ''
     } catch (error: any) {
-      setMessage({ 
-        type: 'error', 
-        text: error.message || 'Upload failed' 
-      })
+      setMessages(prev => ({ 
+        ...prev, 
+        [type]: { 
+          type: 'error', 
+          text: error.message || 'Upload failed' 
+        }
+      }))
     } finally {
-      setUploading(false)
+      setUploading(null)
     }
   }
 
@@ -66,19 +92,19 @@ function UploadData() {
               Select CSV File
             </label>
             <input
-              ref={fileInputRef}
+              ref={fileInputRefs.age}
               type="file"
               accept=".csv"
-              onChange={handleFileSelect}
-              disabled={uploading}
+              onChange={e => handleFileSelect('age', e)}
+              disabled={uploading !== null}
               className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
                        file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
                        file:text-xs file:font-semibold file:bg-highlights file:text-white 
                        hover:file:opacity-90 disabled:opacity-50"
             />
-            {selectedFile && (
+            {selectedFiles.age && (
               <p className="mt-2 text-xs text-gray-300">
-                Selected: <span className="text-highlights">{selectedFile.name}</span>
+                Selected: <span className="text-highlights">{selectedFiles.age.name}</span>
               </p>
             )}
           </div>
@@ -96,29 +122,29 @@ function UploadData() {
 
           {/* Upload Button */}
           <button
-            onClick={handleUpload}
-            disabled={uploading || !selectedFile}
+            onClick={() => handleUpload('age')}
+            disabled={uploading !== null || !selectedFiles.age}
             className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
                      hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
                      transition-opacity"
           >
-            {uploading ? '⏳ Uploading...' : '🚀 Upload'}
+            {uploading === 'age' ? '⏳ Uploading...' : '🚀 Upload'}
           </button>
 
           {/* Message Display */}
-          {message && (
+          {messages.age && (
             <div className={`mt-4 p-3 rounded-lg border text-xs ${
-              message.type === 'success' 
+              messages.age.type === 'success' 
                 ? 'bg-green-500/20 border-green-500 text-green-300' 
-                : message.type === 'error'
+                : messages.age.type === 'error'
                 ? 'bg-red-500/20 border-red-500 text-red-300'
                 : 'bg-blue-500/20 border-blue-500 text-blue-300'
             }`}>
               <p className="font-semibold mb-1">
-                {message.type === 'success' ? '✅ Success!' : 
-                 message.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+                {messages.age.type === 'success' ? '✅ Success!' : 
+                 messages.age.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
               </p>
-              <p>{message.text}</p>
+              <p>{messages.age.text}</p>
             </div>
           )}
         </div>
@@ -137,6 +163,74 @@ function UploadData() {
           <p className="text-gray-500 text-sm italic">Coming soon...</p>
         </div>
 
+
+        {/* Education Data Upload Card */}
+        <div className="bg-primary rounded-lg shadow-lg p-6 border-2 border-highlights">
+          <h2 className="text-2xl font-bold text-white mb-2">Education Data</h2>
+          <p className="text-gray-400 mb-4 text-sm">Upload emigrant education data</p>
+
+          {/* File Selection */}
+          <div className="mb-4">
+            <label className="block text-white font-semibold mb-2 text-sm">
+              Select CSV File
+            </label>
+            <input
+              ref={fileInputRefs.education}
+              type="file"
+              accept=".csv"
+              onChange={e => handleFileSelect('education', e)}
+              disabled={uploading !== null}
+              className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
+                       file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                       file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                       hover:file:opacity-90 disabled:opacity-50"
+            />
+            {selectedFiles.education && (
+              <p className="mt-2 text-xs text-gray-300">
+                Selected: <span className="text-highlights">{selectedFiles.education.name}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Requirements */}
+          <div className="mb-4 p-3 bg-secondary rounded border border-highlights">
+            <h3 className="text-white font-semibold mb-2 text-sm">📋 Requirements:</h3>
+            <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+              <li>Must have "EDUCATIONAL ATTAINMENT" column</li>
+              <li>14 education levels required</li>
+              <li>Year columns must be numeric</li>
+              <li>All values must be numbers</li>
+            </ul>
+          </div>
+
+          {/* Upload Button */}
+          <button
+            onClick={() => handleUpload('education')}
+            disabled={uploading !== null || !selectedFiles.education}
+            className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
+                     hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+                     transition-opacity"
+          >
+            {uploading === 'education' ? '⏳ Uploading...' : '🚀 Upload'}
+          </button>
+
+          {/* Message Display */}
+          {messages.education && (
+            <div className={`mt-4 p-3 rounded-lg border text-xs ${
+              messages.education.type === 'success' 
+                ? 'bg-green-500/20 border-green-500 text-green-300' 
+                : messages.education.type === 'error'
+                ? 'bg-red-500/20 border-red-500 text-red-300'
+                : 'bg-blue-500/20 border-blue-500 text-blue-300'
+            }`}>
+              <p className="font-semibold mb-1">
+                {messages.education.type === 'success' ? '✅ Success!' : 
+                 messages.education.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+              </p>
+              <p>{messages.education.text}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
