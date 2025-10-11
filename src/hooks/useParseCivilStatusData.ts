@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import Papa from 'papaparse'
+import { getAllCivilStatusData } from '../api/civilStatusService'
 
 interface TransformedCivilStatusData {
   YEAR: number
   Single: number
   Married: number
-  Widowed: number
+  Widower: number
   Separated: number
   Divorced: number
   'Not Reported': number
@@ -15,7 +15,7 @@ interface GroupedCivilStatusData {
   Period: string
   Single: number
   Married: number
-  Widowed: number
+  Widower: number
   Separated: number
   Divorced: number
   'Not Reported': number
@@ -26,92 +26,98 @@ interface UseParseCivilStatusDataReturn {
   groupedChartData: GroupedCivilStatusData[]
   civilStatusCategories: string[]
   loading: boolean
+  error: string | null
 }
 
-export const useParseCivilStatusData = (csvPath: string): UseParseCivilStatusDataReturn => {
+export const useParseCivilStatusData = (): UseParseCivilStatusDataReturn => {
   const [chartData, setChartData] = useState<TransformedCivilStatusData[]>([])
   const [groupedChartData, setGroupedChartData] = useState<GroupedCivilStatusData[]>([])
   const [civilStatusCategories, setCivilStatusCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Hook to Parse Civil Status Data
   useEffect(() => {
-    Papa.parse(csvPath, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const rawData = results.data as Record<string, string>[]
+    fetchFromFirebase()
+  }, [])
 
-        // If data is empty, return
-        if (rawData.length === 0) return
+  const fetchFromFirebase = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        // Extract Civil Status Categories (exclude YEAR)
-        const allCategories = Object.keys(rawData[0]).filter(key => key !== 'YEAR')
-        setCivilStatusCategories(allCategories)
+      console.log('Fetching civil status data from Firebase...')
+      const data = await getAllCivilStatusData()
 
-        // Transform data into structured format
-        const transformed = rawData.map((row) => {
-          const yearData: TransformedCivilStatusData = { 
-            YEAR: parseInt(row.YEAR, 10), 
-            Single: parseInt(row.Single, 10) || 0,
-            Married: parseInt(row.Married, 10) || 0,
-            Widowed: parseInt(row.Widowed, 10) || 0,
-            Separated: parseInt(row.Separated, 10) || 0,
-            Divorced: parseInt(row.Divorced, 10) || 0,
-            'Not Reported': parseInt(row['Not Reported'], 10) || 0
-          }
+      if (data.length === 0) {
+        console.warn('No civil status data found in Firebase. Please upload data first.')
+        setLoading(false)
+        return
+      }
 
-          return yearData
-        })
+      // Extract civil status categories
+      const firstEntry = data[0]
+      const allCategories = Object.keys(firstEntry).filter(key => key !== 'YEAR')
+      setCivilStatusCategories(allCategories)
 
-        // Group data into 3-year periods for Stacked Bar Chart
-        const groupedData: GroupedCivilStatusData[] = []
-        const startYear = 1988
-        const endYear = 2020
+      const transformed: TransformedCivilStatusData[] = data.map(item => ({
+        YEAR: item.Year,
+        Single: item.Single,
+        Married: item.Married,
+        Widower: item.Widower,
+        Separated: item.Separated,
+        Divorced: item.Divorced,
+        'Not Reported': item['Not Reported']
+      }))
 
-        for (let year = startYear; year <= endYear; year += 3) {
-          const periodEnd = Math.min(year + 2, endYear)
-          const periodLabel = `${year} - ${periodEnd}`
-          const periodData: GroupedCivilStatusData = { 
-            Period: periodLabel,
-            Single: 0,
-            Married: 0,
-            Widowed: 0,
-            Separated: 0,
-            Divorced: 0,
-            'Not Reported': 0
-          }
+      // Group data into 3 year periods for Bar Chart
+      const groupedData: GroupedCivilStatusData[] = []
+      const startYear = 1988
+      const endYear = 2020
 
-          // Sum up values for each civil status category in this period
-          allCategories.forEach(category => {
-            let sum = 0
-
-            for (let y = year; y <= periodEnd; y++) {
-              const yearData = transformed.find(c => c.YEAR === y)
-
-              if (yearData && yearData[category as keyof TransformedCivilStatusData]) {
-                sum += yearData[category as keyof TransformedCivilStatusData] as number
-              }
-            }
-
-            (periodData as any)[category] = sum
-          })
-
-          groupedData.push(periodData)
+      for (let year = startYear; year <= endYear; year += 3) {
+        const periodEnd = Math.min(year + 2, endYear)
+        const periodLabel = `${year} - ${periodEnd}`
+        const periodData: GroupedCivilStatusData = {
+          Period: periodLabel,
+          Single: 0,
+          Married: 0,
+          Widower: 0,
+          Separated: 0,
+          Divorced: 0,
+          'Not Reported': 0
         }
 
-        setChartData(transformed)
-        setGroupedChartData(groupedData)
-        setLoading(false)
+        for (let y = year; y <= periodEnd; y++) {
+          const yearData = transformed.find(s => s.YEAR === y)
+          if (yearData) {
+            periodData.Single += yearData.Single
+            periodData.Married += yearData.Married
+            periodData.Widower += yearData.Widower
+            periodData.Separated += yearData.Separated
+            periodData.Divorced += yearData.Divorced
+            periodData['Not Reported'] += yearData['Not Reported']
+          }
+        }
+
+        groupedData.push(periodData)
       }
-    })
-  }, [csvPath])
+
+      setChartData(transformed)
+      setGroupedChartData(groupedData)
+      setLoading(false)
+      console.log('Successfully loaded data from Firebase')
+    } catch (err) {
+      console.error('Error fetching civil status data from Firebase:', err)
+      setError('Failed to load civil status data from Firebase')
+      setLoading(false)
+    }
+  }
 
   return {
     chartData,
     groupedChartData,
     civilStatusCategories,
-    loading
+    loading,
+    error
   }
 }

@@ -12,15 +12,24 @@ import {
   } from 'recharts'
 import { useParseCivilStatusData } from '../../hooks/useParseCivilStatusData'
 
-
-const civilStatusDataCSV = '/data/Emigrant-1988-2020-CivilStatus.csv'
-
-
 const CivilStatusCharts = () => {
-  const { chartData, groupedChartData, civilStatusCategories, loading } = useParseCivilStatusData(civilStatusDataCSV)
+  const { chartData, groupedChartData, civilStatusCategories, loading, error } = useParseCivilStatusData()
 
   // Show loading message
-  if (loading) return <div>Loading...</div>
+  if (loading) return (
+    <div className="text-white text-center p-8">
+      <div className="animate-pulse">Loading Civil Status data from Firebase...</div>
+    </div>
+  )
+
+  if (error) {
+    return (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+        <p className="font-bold">⚠️ Error Loading Data</p>
+        <p>{error}</p>
+      </div>
+    )
+  }
 
   const colors = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#DDA0DD'
