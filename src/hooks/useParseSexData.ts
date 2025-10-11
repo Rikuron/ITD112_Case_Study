@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Papa from 'papaparse'
+import { getAllSexData } from '../api/sexService'
 
 interface TransformedSexData {
   YEAR: number
@@ -44,9 +44,10 @@ interface UseParseSexDataReturn {
   trendlineData: TrendlineDataSet
   sexCategories: string[]
   loading: boolean
+  error: string | null
 }
 
-export const useParseSexData = (csvPath: string): UseParseSexDataReturn => {
+export const useParseSexData = (): UseParseSexDataReturn => {
   const [chartData, setChartData] = useState<TransformedSexData[]>([])
   const [groupedChartData, setGroupedChartData] = useState<GroupedSexData[]>([])
   const [populationPyramidData, setPopulationPyramidData] = useState<PopulationPyramidData[]>([])
@@ -54,6 +55,7 @@ export const useParseSexData = (csvPath: string): UseParseSexDataReturn => {
   const [trendlineData, setTrendlineData] = useState<TrendlineDataSet>({ maleTrend: [], femaleTrend: [] })
   const [sexCategories, setSexCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Calculate Linear Regression for Scatter Plot Trendline
   const calculateLinearRegression = (data: { x: number; y: number}[]) => {
@@ -70,100 +72,97 @@ export const useParseSexData = (csvPath: string): UseParseSexDataReturn => {
   }
 
   useEffect(() => {
-    Papa.parse(csvPath, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const rawData = results.data as Record<string, string>[]
+    fetchFromFirebase()
+  }, [])
 
-        // If data is empty, return
-        if (rawData.length === 0) return 
+  const fetchFromFirebase = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        // Extract all Sex Categories (excluding YEAR)
-        const allCategories = Object.keys(rawData[0]).filter(key => key !== 'YEAR')
-        setSexCategories(allCategories)
+      console.log('Fetching sex data from Firebase...')
+      const data = await getAllSexData()
 
-        // Transform data into structured format
-        const transformed = rawData.map((row) => {
-          const yearData: TransformedSexData = {
-            YEAR: parseInt(row.YEAR, 10),
-            MALE: parseInt(row.MALE, 10) || 0,
-            FEMALE: parseInt(row.FEMALE, 10) || 0
-          }
+      if (data.length === 0) {
+        console.warn('No sex data found in Firebase. Please upload data first.')
+        setLoading(false)
+        return
+      }
 
-          return yearData
-        })
+      // Extract sex categories
+      const allCategories = ["MALE", "FEMALE"]
+      setSexCategories(allCategories)
 
-        // Group data into 5 year periods for Population Pyramid
-        const groupedData: GroupedSexData[] = []
-        const startYear = 1981
-        const endYear = 2020
+      const transformed: TransformedSexData[] = data.map(item => ({
+        YEAR: item.Year,
+        MALE: item.MALE,
+        FEMALE: item.FEMALE
+      }))
 
-        for (let year = startYear; year <= endYear; year += 5) {
-          const periodEnd = Math.min(year + 4, endYear)
-          const periodLabel = `${year} - ${periodEnd}`
-          const periodData: GroupedSexData = {
-            Period: periodLabel,
-            MALE: 0,
-            FEMALE: 0
-          }
+      // Group data into 5 year periods for Bar Chart
+      const groupedData: GroupedSexData[] = []
+      const startYear = 1981
+      const endYear = 2020
 
-          // Sum up all values for each sex category in the period
-          allCategories.forEach(category => {
-            let sum = 0
-
-            for (let y = year; y <= periodEnd; y++) {
-              const yearData = transformed.find(s => s.YEAR === y)
-
-              if (yearData && yearData[category as keyof TransformedSexData]) {
-                sum += yearData[category as keyof TransformedSexData] as number
-              }
-            }
-
-            (periodData as any)[category] = sum
-          })
-
-          groupedData.push(periodData)
+      for (let year = startYear; year <= endYear; year += 5) {
+        const periodEnd = Math.min(year + 4, endYear)
+        const periodLabel = `${year} - ${periodEnd}`
+        const periodData: GroupedSexData = {
+          Period: periodLabel,
+          MALE: 0,
+          FEMALE: 0
         }
 
-        // Create Population Pyramid data with negative male values for display
-        const pyramidData: PopulationPyramidData[] = groupedData.map((period) => ({
-          Period: period.Period,
-          MALE: period.MALE,
-          FEMALE: period.FEMALE,
-          MaleNegative: -period.MALE
-        }))
+        for (let y = year; y <= periodEnd; y++) {
+          const yearData = transformed.find(s => s.YEAR === y)
+          if (yearData) {
+            periodData.MALE += yearData.MALE
+            periodData.FEMALE += yearData.FEMALE
+          }
+        }
 
-
-        // Create scatter plot data
-        const maleScatterData = transformed.map(item => ({ x: item.YEAR, y: item.MALE }))
-        const femaleScatterData = transformed.map(item => ({ x: item.YEAR, y: item.FEMALE }))
-
-        // Calculate trendlines
-        const maleRegression = calculateLinearRegression(maleScatterData)
-        const femaleRegression = calculateLinearRegression(femaleScatterData)
-
-        const maleTrendline: TrendlineData[] = [
-          { x: startYear, y: maleRegression.slope * startYear + maleRegression.intercept },
-          { x: endYear, y: maleRegression.slope * endYear + maleRegression.intercept }
-        ]
-
-        const femaleTrendline: TrendlineData[] = [
-          { x: startYear, y: femaleRegression.slope * startYear + femaleRegression.intercept },
-          { x: endYear, y: femaleRegression.slope * endYear + femaleRegression.intercept }
-        ]
-
-
-        setChartData(transformed)
-        setGroupedChartData(groupedData)
-        setPopulationPyramidData(pyramidData)
-        setScatterPlotData({ male: maleScatterData, female: femaleScatterData })
-        setTrendlineData({ maleTrend: maleTrendline, femaleTrend: femaleTrendline })
-        setLoading(false)
+        groupedData.push(periodData)
       }
-    })
-  }, [csvPath])
+
+      // Create Population Pyramid Data with negative male values
+      const pyramidData: PopulationPyramidData[] = groupedData.map((period) => ({
+        Period: period.Period,
+        MALE: period.MALE,
+        FEMALE: period.FEMALE,
+        MaleNegative: -period.MALE
+      }))
+
+      // Create Scatterplot data
+      const maleScatterData = transformed.map(item => ({ x: item.YEAR, y: item.MALE  }))
+      const femaleScatterData = transformed.map(item => ({ x: item.YEAR, y: item.FEMALE }))
+
+      // Calculate trendlines
+      const maleRegression = calculateLinearRegression(maleScatterData)
+      const femaleRegression = calculateLinearRegression(femaleScatterData)
+
+      const maleTrendline: TrendlineData[] = [
+        { x: startYear, y: maleRegression.slope * startYear + maleRegression.intercept },
+        { x: endYear, y: maleRegression.slope * endYear + maleRegression.intercept }
+      ]
+
+      const femaleTrendline: TrendlineData[] = [
+        { x: startYear, y: femaleRegression.slope * startYear + femaleRegression.intercept },
+        { x: endYear, y: femaleRegression.slope * endYear + femaleRegression.intercept }
+      ]
+
+      setChartData(transformed)
+      setGroupedChartData(groupedData)
+      setPopulationPyramidData(pyramidData)
+      setScatterPlotData({ male: maleScatterData, female: femaleScatterData })
+      setTrendlineData({ maleTrend: maleTrendline, femaleTrend: femaleTrendline })
+      setLoading(false)
+      console.log('Successfully loaded data from Firebase')
+    } catch (err) {
+      console.error('Error fetching sex data from Firebase:', err)
+      setError('Failed to load sex data from Firebase')
+      setLoading(false)
+    }
+  }
 
   return {
     chartData,
@@ -172,6 +171,7 @@ export const useParseSexData = (csvPath: string): UseParseSexDataReturn => {
     scatterPlotData,
     trendlineData,
     sexCategories,
-    loading
+    loading,
+    error
   }  
 }

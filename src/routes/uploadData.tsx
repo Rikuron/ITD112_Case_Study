@@ -3,29 +3,33 @@ import { useState, useRef } from 'react'
 import { uploadAgeCSVToFirebase } from '../utils/uploadAgeData'
 import { uploadEducationCSVToFirebase } from '../utils/uploadEducationData'
 import { uploadOccupationCSVToFirebase } from '../utils/uploadOccupationData'
+import { uploadSexCSVToFirebase } from '../utils/uploadSexData'
 
 export const Route = createFileRoute('/uploadData')({
   component: UploadData,
 })
 
-type DataType = 'age' | 'education' | 'occupation'
+type DataType = 'age' | 'education' | 'occupation' | 'sex'
 
 function UploadData() {
   const [uploading, setUploading] = useState<DataType | null>(null)
   const [messages, setMessages] = useState<Record<DataType, { type: 'success' | 'error' | 'info'; text: string } | null>>({
     age: null,
     education: null,
-    occupation: null
+    occupation: null,
+    sex: null
   })
   const [selectedFiles, setSelectedFiles] = useState<Record<DataType, File | null>>({
     age: null,
     education: null,
-    occupation: null
+    occupation: null,
+    sex: null
   })
   const fileInputRefs = {
     age: useRef<HTMLInputElement>(null),
     education: useRef<HTMLInputElement>(null),
-    occupation: useRef<HTMLInputElement>(null)
+    occupation: useRef<HTMLInputElement>(null),
+    sex: useRef<HTMLInputElement>(null)
   }
 
   const handleFileSelect = (type: DataType, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +59,8 @@ function UploadData() {
         result = await uploadEducationCSVToFirebase(selectedFile)
       } else if (type === 'occupation') {
         result = await uploadOccupationCSVToFirebase(selectedFile)
+      } else if (type === 'sex') {
+        result = await uploadSexCSVToFirebase(selectedFile)
       }
       
       setMessages(prev => ({ 
@@ -294,6 +300,67 @@ function UploadData() {
                 messages.occupation.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
               </p>
               <p>{messages.occupation.text}</p>
+            </div>
+          )}
+        </div>
+
+
+        {/* Sex Data Upload Card */}
+        <div className="bg-primary rounded-lg shadow-lg p-6 border-2 border-highlights">
+          <h2 className="text-2xl font-bold text-white mb-2">Sex Data</h2>
+          <p className="text-gray-400 mb-4 text-sm">Upload emigrant sex data (1981-2020)</p>
+
+          <div className="mb-4">
+            <label className="block text-white font-semibold mb-2 text-sm">Select CSV File</label>
+            <input
+              ref={fileInputRefs.sex}
+              type="file"
+              accept=".csv"
+              onChange={(e) => handleFileSelect('sex', e)}
+              disabled={uploading !== null}
+              className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
+                      file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                      file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                      hover:file:opacity-90 disabled:opacity-50"
+            />
+            {selectedFiles.sex && (
+              <p className="mt-2 text-xs text-gray-300">
+                Selected: <span className="text-highlights">{selectedFiles.sex.name}</span>
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4 p-3 bg-secondary rounded border border-highlights">
+            <h3 className="text-white font-semibold mb-2 text-sm">📋 Requirements:</h3>
+            <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+              <li>Must have YEAR, MALE, FEMALE columns</li>
+              <li>Years from 1981-2020</li>
+              <li>All values must be numbers</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={() => handleUpload('sex')}
+            disabled={uploading !== null || !selectedFiles.sex}
+            className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
+                    hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          >
+            {uploading === 'sex' ? '⏳ Uploading...' : '🚀 Upload'}
+          </button>
+
+          {messages.sex && (
+            <div className={`mt-4 p-3 rounded-lg border text-xs ${
+              messages.sex.type === 'success' 
+                ? 'bg-green-500/20 border-green-500 text-green-300' 
+                : messages.sex.type === 'error'
+                ? 'bg-red-500/20 border-red-500 text-red-300'
+                : 'bg-blue-500/20 border-blue-500 text-blue-300'
+            }`}>
+              <p className="font-semibold mb-1">
+                {messages.sex.type === 'success' ? '✅ Success!' : 
+                messages.sex.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+              </p>
+              <p>{messages.sex.text}</p>
             </div>
           )}
         </div>

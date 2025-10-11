@@ -40,7 +40,7 @@ const OccupationCharts = () => {
   // Show loading message
   if (loading) return (
     <div className="text-white text-center p-8">
-      <div className="animate-pulse">Loading occupation data from Firebase...</div>
+      <div className="animate-pulse">Loading Occupation data from Firebase...</div>
     </div>
   )
 

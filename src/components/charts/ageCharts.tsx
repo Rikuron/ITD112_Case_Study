@@ -16,13 +16,16 @@ const AgeCharts = () => {
   const { chartData, groupedChartData, ageGroups, loading, error } = useParseAgeData()
 
   // Show loading message
-  if (loading) return <div>Loading...</div>
+  if (loading) return (
+    <div className="text-white text-center p-8">
+      <div className="animate-pulse">Loading sex data from Firebase...</div>
+    </div>
+  )
 
-  // Error message
   if (error) {
     return (
       <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
-        <p className="font-bold">Error:</p>
+        <p className="font-bold">⚠️ Error Loading Data</p>
         <p>{error}</p>
       </div>
     )

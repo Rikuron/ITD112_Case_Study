@@ -16,7 +16,20 @@ const EducationCharts = () => {
   const { chartData, groupedChartData, educationLevels, loading, error } = useParseEducationData()
 
   // Show loading message
-  if (loading) return <div>Loading...</div>
+  if (loading) return (
+    <div className="text-white text-center p-8">
+      <div className="animate-pulse">Loading Education data from Firebase...</div>
+    </div>
+  )
+
+  if (error) {
+    return (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+        <p className="font-bold">⚠️ Error Loading Data</p>
+        <p>{error}</p>
+      </div>
+    )
+  }
 
   // Error message
   if (error) {
