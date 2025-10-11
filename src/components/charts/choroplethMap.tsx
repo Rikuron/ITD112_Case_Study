@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { ResponsiveChoropleth } from '@nivo/geo'
 import { useParseAllDestinationData } from '../../hooks/useParseAllDestinationData'
 
-const allDestinationDataCSV = '/data/Emigrant-1981-2020-AllCountries.csv'
-
 // Country name mapping from CSV to GeoJSON ISO codes
 const countryMapping: Record<string, string> = {
   "PHILIPPINES": "PHL",
@@ -185,7 +183,7 @@ const countryMapping: Record<string, string> = {
 }
 
 const ChoroplethMap = () => {
-  const { mapData, loading } = useParseAllDestinationData(allDestinationDataCSV)
+  const { mapData, loading } = useParseAllDestinationData()
   const [geoData, setGeoData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -205,7 +203,12 @@ const ChoroplethMap = () => {
       })
   }, [])
 
-  if (error) return <div className="text-white p-6">Error: {error}</div>
+  if (error) return (
+    <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+      <p className="font-bold">⚠️ Error Loading Data</p>
+      <p>{error}</p>
+    </div>
+  )
   if (loading || !geoData) return <div className="text-white p-6">Loading map...</div>
 
   // Transform data for Nivo Choropleth format
