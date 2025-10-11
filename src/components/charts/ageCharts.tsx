@@ -18,7 +18,7 @@ const AgeCharts = () => {
   // Show loading message
   if (loading) return (
     <div className="text-white text-center p-8">
-      <div className="animate-pulse">Loading sex data from Firebase...</div>
+      <div className="animate-pulse">Loading Age data from Firebase...</div>
     </div>
   )
 
