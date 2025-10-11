@@ -20,17 +20,46 @@ const navigationItems = [
 
 const NavBar = forwardRef<HTMLElement>((_props, ref) => {
   // State Variables
-  const { isHovering, setIsHovering, navBarWidth } = useNavBar()
+  const { isHovering, setIsHovering, navBarWidth, isMobile } = useNavBar()
 
   // Event Handlers
   const handleMouseEnter = () => {
-    setIsHovering(true)
+    if (!isMobile) setIsHovering(true)
   }
   const handleMouseLeave = () => {
-    setIsHovering(false)
+    if (!isMobile) setIsHovering(false)
   }
 
   // Rendered UI
+
+  // Mobile view
+  if (isMobile) {
+    return (
+      <nav 
+        ref={ref}
+        className="fixed bottom-0 left-0 right-0 z-50 bg-secondary h-16 shadow-lg"
+      >
+        <div className="flex items-center justify-around h-full px-4">
+          {navigationItems.map((item) => (
+            <Link 
+              key={item.name} 
+              to={item.path}
+              className="flex flex-col items-center justify-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors flex-1 hover:cursor-pointer duration-300 ease-in-out"
+            >
+              {item.icon}
+              <span className="text-white text-xs">{item.name}</span>
+            </Link>
+          ))}
+          <button className="flex flex-col items-center justify-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors flex-1 hover:cursor-pointer duration-300 ease-in-out">
+            <IoSettingsOutline className="text-white text-2xl" />
+            <span className="text-white text-xs">Settings</span>
+          </button>
+        </div>
+      </nav>
+    )
+  }
+
+  // Desktop view
   return (
     <nav 
       ref={ref}
