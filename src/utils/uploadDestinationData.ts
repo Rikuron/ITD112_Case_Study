@@ -102,17 +102,27 @@ export const uploadMajorDestinationCSVToFirebase = async (file: File): Promise<U
 // ===== ALL DESTINATION UPLOAD =====
 
 const validateAllDestinationCSV = (data: CSVRow[]): { valid: boolean; error?: string } => {
+  // Check if empty
   if (data.length === 0) return { valid: false, error: 'CSV file is empty' }
 
+  // Check if COUNTRY column exists
   if (!data[0].hasOwnProperty('COUNTRY')) {
     return { valid: false, error: 'Missing required column: COUNTRY' }
   }
 
+  // Check if year columns exist
   const yearColumns = Object.keys(data[0]).filter(key => key !== 'COUNTRY')
   if (yearColumns.length === 0) {
     return { valid: false, error: 'No year columns found' }
   }
 
+  // Validate that year columns are numbers
+  for (const year of yearColumns) {
+    if (isNaN(parseInt(year, 10))) {
+      return { valid: false, error: `Invalid year column: "${year}"` }
+    }
+  }
+  
   return { valid: true }
 }
 

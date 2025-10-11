@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { ResponsiveChoropleth } from '@nivo/geo'
 import { useParseOriginProvinceData } from '../../hooks/useParseOriginProvinceData'
 
-const csvPath = '/data/Emigrant-1988-2020-PlaceOfOrigin-Province.csv'
-
 const normalizeName = (s: string) =>
   (s || '')
     .toUpperCase()
@@ -15,7 +13,7 @@ const normalizeName = (s: string) =>
 const provinceGeoPath = '/data/Provinces.json'
 
 const PHOriginChoropleth = () => {
-  const { totals, min, max, loading } = useParseOriginProvinceData(csvPath)
+  const { totals, min, max, loading, error: dataError } = useParseOriginProvinceData()
   const [features, setFeatures] = useState<any[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,7 +39,8 @@ const PHOriginChoropleth = () => {
     .catch((e) => setError(e.message))
   }, [])
 
-  if (error) return <div className="text-white p-6">Error: {error}</div>
+  if (error) return <div className="text-red-500 p-6">Error: {error}</div>
+  if (dataError) return <div className="text-red-500 p-6">Error: {dataError}</div>
   if (loading || !features) return <div className="text-white p-6">Loading map...</div>
 
   const data = Object.entries(totals).map(([name, total]) => ({

@@ -7,12 +7,14 @@ import { uploadSexCSVToFirebase } from '../utils/uploadSexData'
 import { uploadCivilStatusCSVToFirebase } from '../utils/uploadCivilStatusData'
 import { uploadMajorDestinationCSVToFirebase } from '../utils/uploadDestinationData'
 import { uploadAllDestinationCSVToFirebase } from '../utils/uploadDestinationData'
+import { uploadRegionCSVToFirebase } from '../utils/uploadOriginData'
+import { uploadProvinceCSVToFirebase } from '../utils/uploadOriginData'
 
 export const Route = createFileRoute('/uploadData')({
   component: UploadData,
 })
 
-type DataType = 'age' | 'education' | 'occupation' | 'sex' | 'civilStatus' | 'majorDestination' | 'allDestination'
+type DataType = 'age' | 'education' | 'occupation' | 'sex' | 'civilStatus' | 'majorDestination' | 'allDestination' | 'region' | 'province'
 
 function UploadData() {
   const [uploading, setUploading] = useState<DataType | null>(null)
@@ -23,7 +25,9 @@ function UploadData() {
     sex: null,
     civilStatus: null,
     majorDestination: null,
-    allDestination: null
+    allDestination: null,
+    region: null,
+    province: null
   })
   const [selectedFiles, setSelectedFiles] = useState<Record<DataType, File | null>>({
     age: null,
@@ -32,7 +36,9 @@ function UploadData() {
     sex: null,
     civilStatus: null,
     majorDestination: null,
-    allDestination: null
+    allDestination: null,
+    region: null,
+    province: null
   })
   const fileInputRefs = {
     age: useRef<HTMLInputElement>(null),
@@ -41,7 +47,9 @@ function UploadData() {
     sex: useRef<HTMLInputElement>(null),
     civilStatus: useRef<HTMLInputElement>(null),
     majorDestination: useRef<HTMLInputElement>(null),
-    allDestination: useRef<HTMLInputElement>(null)
+    allDestination: useRef<HTMLInputElement>(null),
+    region: useRef<HTMLInputElement>(null),
+    province: useRef<HTMLInputElement>(null)
   }
 
   const handleFileSelect = (type: DataType, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +87,10 @@ function UploadData() {
         result = await uploadMajorDestinationCSVToFirebase(selectedFile)
       } else if (type === 'allDestination') {
         result = await uploadAllDestinationCSVToFirebase(selectedFile)
+      } else if (type === 'region') {
+        result = await uploadRegionCSVToFirebase(selectedFile)
+      } else if (type === 'province') {
+        result = await uploadProvinceCSVToFirebase(selectedFile)
       }
       
       setMessages(prev => ({ 
@@ -553,6 +565,128 @@ function UploadData() {
                 messages.sex.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
               </p>
               <p>{messages.sex.text}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Region Origin Data Upload Card */}
+        <div className="bg-primary rounded-lg shadow-lg p-6 border-2 border-highlights">
+          <h2 className="text-2xl font-bold text-white mb-2">Origin (Region)</h2>
+          <p className="text-gray-400 mb-4 text-sm">Upload emigrant origin data by region</p>
+
+          <div className="mb-4">
+            <label className="block text-white font-semibold mb-2 text-sm">Select CSV File</label>
+            <input
+              ref={fileInputRefs.region}
+              type="file"
+              accept=".csv"
+              onChange={(e) => handleFileSelect('region', e)}
+              disabled={uploading !== null}
+              className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
+                      file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                      file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                      hover:file:opacity-90 disabled:opacity-50"
+            />
+            {selectedFiles.region && (
+              <p className="mt-2 text-xs text-gray-300">
+                Selected: <span className="text-highlights">{selectedFiles.region.name}</span>
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4 p-3 bg-secondary rounded border border-highlights">
+            <h3 className="text-white font-semibold mb-2 text-sm">📋 Requirements:</h3>
+            <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+              <li>Must have "REGION" column</li>
+              <li>17 regions required</li>
+              <li>Year columns (1988-2020)</li>
+              <li>All values must be numbers</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={() => handleUpload('region')}
+            disabled={uploading !== null || !selectedFiles.region}
+            className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
+                    hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          >
+            {uploading === 'region' ? '⏳ Uploading...' : '🚀 Upload'}
+          </button>
+
+          {messages.region && (
+            <div className={`mt-4 p-3 rounded-lg border text-xs ${
+              messages.region.type === 'success' 
+                ? 'bg-green-500/20 border-green-500 text-green-300' 
+                : messages.region.type === 'error'
+                ? 'bg-red-500/20 border-red-500 text-red-300'
+                : 'bg-blue-500/20 border-blue-500 text-blue-300'
+            }`}>
+              <p className="font-semibold mb-1">
+                {messages.region.type === 'success' ? '✅ Success!' : 
+                messages.region.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+              </p>
+              <p>{messages.region.text}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Province Origin Data Upload Card */}
+        <div className="bg-primary rounded-lg shadow-lg p-6 border-2 border-highlights">
+          <h2 className="text-2xl font-bold text-white mb-2">Origin (Province)</h2>
+          <p className="text-gray-400 mb-4 text-sm">Upload emigrant origin data by province</p>
+
+          <div className="mb-4">
+            <label className="block text-white font-semibold mb-2 text-sm">Select CSV File</label>
+            <input
+              ref={fileInputRefs.province}
+              type="file"
+              accept=".csv"
+              onChange={(e) => handleFileSelect('province', e)}
+              disabled={uploading !== null}
+              className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
+                      file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                      file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                      hover:file:opacity-90 disabled:opacity-50"
+            />
+            {selectedFiles.province && (
+              <p className="mt-2 text-xs text-gray-300">
+                Selected: <span className="text-highlights">{selectedFiles.province.name}</span>
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4 p-3 bg-secondary rounded border border-highlights">
+            <h3 className="text-white font-semibold mb-2 text-sm">📋 Requirements:</h3>
+            <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+              <li>Must have "PROVINCE" column</li>
+              <li>82 provinces required</li>
+              <li>Year columns (1988-2020)</li>
+              <li>All values must be numbers</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={() => handleUpload('province')}
+            disabled={uploading !== null || !selectedFiles.province}
+            className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
+                    hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          >
+            {uploading === 'province' ? '⏳ Uploading...' : '🚀 Upload'}
+          </button>
+
+          {messages.province && (
+            <div className={`mt-4 p-3 rounded-lg border text-xs ${
+              messages.province.type === 'success' 
+                ? 'bg-green-500/20 border-green-500 text-green-300' 
+                : messages.province.type === 'error'
+                ? 'bg-red-500/20 border-red-500 text-red-300'
+                : 'bg-blue-500/20 border-blue-500 text-blue-300'
+            }`}>
+              <p className="font-semibold mb-1">
+                {messages.province.type === 'success' ? '✅ Success!' : 
+                messages.province.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+              </p>
+              <p>{messages.province.text}</p>
             </div>
           )}
         </div>
