@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Papa from 'papaparse'
+import { getAllRegionData } from '../api/originService'
 
 interface TransformedOriginData {
   YEAR: number
@@ -16,76 +16,80 @@ interface UseParseOriginDataReturn {
   barChartData: BarChartData[]
   regions: string[]
   loading: boolean
+  error: string | null
 }
 
-export const useParseOriginData = (csvPath: string): UseParseOriginDataReturn => {
+export const useParseOriginData = (): UseParseOriginDataReturn => {
   const [chartData, setChartData] = useState<TransformedOriginData[]>([])
   const [barChartData, setBarChartData] = useState<BarChartData[]>([])
   const [regions, setRegions] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Hook to Parse Origin Data
   useEffect(() => {
-    Papa.parse(csvPath, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const rawData = results.data as Record<string, string>[]
+    fetchFromFirebase()
+  }, [])
 
-        // If data is empty, return
-        if (rawData.length === 0) return
+  const fetchFromFirebase = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        // Extract regions from first column
-        const allRegions = rawData.map(row => row.REGION).filter(Boolean)
-        setRegions(allRegions)
+      const data = await getAllRegionData()
 
-        // Extract year columns
-        const years = Object.keys(rawData[0]).filter(key => key !== 'REGION')
-
-        // Transform data into structured format
-        const transformed: TransformedOriginData[] = years.map(year => {
-          const yearData: TransformedOriginData = {
-            YEAR: parseInt(year, 10)
-          }
-
-          rawData.forEach(row => {
-            const regionName = row.REGION
-            yearData[regionName] = parseInt(row[year], 10) || 0
-          })
-
-          return yearData
-        })
-
-        // Calculate totals for each region for bar chart
-        const totals: { [key: string]: number } = {}
-        allRegions.forEach(region => {
-          totals[region] = 0
-        })
-
-        transformed.forEach(yearData => {
-          allRegions.forEach(region => {
-            totals[region] += yearData[region] as number
-          })
-        })
-
-        // Convert totals to bar chart data and sort by total descendingly
-        const barChartData = allRegions.map(region => ({
-          region,
-          total: totals[region]
-        })).sort((a, b) => b.total - a.total)
-
-        setChartData(transformed)
-        setBarChartData(barChartData)
+      if (data.length === 0) {
+        setError('No region data found in Firebase. Please upload data first.')
         setLoading(false)
+        return
       }
-    })
-  }, [csvPath])
+
+      // Extract region names
+      const allRegions = Object.keys(data[0]).filter(key => key !== 'Year')
+      setRegions(allRegions)
+
+      // Transform data
+      const transformed: TransformedOriginData[] = data.map(yearData => ({
+        YEAR: yearData.Year,
+        ...Object.fromEntries(
+          allRegions.map(region => [region, yearData[region] || 0])
+        )
+      }))
+
+      // Calculate totals for bar chart
+      const totals: { [key: string]: number } = {}
+      allRegions.forEach(region => {
+        totals[region] = 0
+      })
+
+      transformed.forEach(yearData => {
+        allRegions.forEach(region => {
+          totals[region] += yearData[region] || 0
+        })
+      })
+
+      // Convert totals to bar chart data
+      const barData = allRegions.map(region => ({
+        region,
+        total: totals[region]
+      })).sort((a, b) => b.total - a.total)
+
+      setChartData(transformed)
+      setBarChartData(barData)
+      setLoading(false)
+      console.log('✅ Successfully loaded origin data from Firebase')
+    } catch (err) {
+      console.error('Error fetching origin data from Firebase:', err)
+      setError('Failed to load origin data from Firebase. Please check your connection.')
+      setLoading(false)
+    }
+  }
 
   return {
     chartData,
     barChartData,
     regions,
-    loading
+    loading,
+    error
   }
 }

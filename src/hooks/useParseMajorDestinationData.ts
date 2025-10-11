@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Papa from 'papaparse'
+import { getAllMajorDestinationData } from '../api/destinationService'
 
 interface TransformedMajorDestinationData {
   YEAR: number
@@ -26,81 +26,89 @@ interface UseParseMajorDestinationDataReturn {
   barChartData: BarChartData[]
   countries: string[]
   loading: boolean
+  error: string | null
 }
 
-export const useParseMajorDestinationData = (csvPath: string): UseParseMajorDestinationDataReturn => {
+export const useParseMajorDestinationData = (): UseParseMajorDestinationDataReturn => {
   const [chartData, setChartData] = useState<TransformedMajorDestinationData[]>([])
   const [barChartData, setBarChartData] = useState<BarChartData[]>([])
   const [countries, setCountries] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Hook to Parse Major Destination Data
   useEffect(() => {
-    Papa.parse(csvPath, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const rawData = results.data as Record<string, string>[]
+    fetchFromFirebase()
+  }, [])
 
-        // If data is empty, return
-        if (rawData.length === 0) return
+  const fetchFromFirebase = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        // Extract Country names from first row except first cell
-        const allCountries = Object.keys(rawData[0]).filter(key => key !== 'YEAR')
-        setCountries(allCountries)
+      console.log('Fetching major destination data from Firebase...')
+      const data = await getAllMajorDestinationData()
 
-        // Transform data into structured format
-        const transformed = rawData.map((row) => {
-          const yearData: TransformedMajorDestinationData = { 
-            YEAR: parseInt(row.YEAR, 10),
-            USA: parseInt(row.USA, 10) || 0,
-            CANADA: parseInt(row.CANADA, 10) || 0,
-            JAPAN: parseInt(row.JAPAN, 10) || 0,
-            AUSTRALIA: parseInt(row.AUSTRALIA, 10) || 0,
-            ITALY: parseInt(row.ITALY, 10) || 0,
-            'NEW ZEALAND': parseInt(row['NEW ZEALAND'], 10) || 0,
-            'UNITED KINGDOM': parseInt(row['UNITED KINGDOM'], 10) || 0,
-            GERMANY: parseInt(row.GERMANY, 10) || 0,
-            'SOUTH KOREA': parseInt(row['SOUTH KOREA'], 10) || 0,
-            SPAIN: parseInt(row.SPAIN, 10) || 0,
-            OTHERS: parseInt(row.OTHERS, 10) || 0
-          }
-
-          return yearData
-        })
-
-        // Calculate totals for bar chart
-        const totals: { [key: string]: number } = {}
-        allCountries.forEach(country => {
-          totals[country] = 0
-        })
-        
-        transformed.forEach(yearData => {
-          allCountries.forEach(country => {
-            totals[country] += yearData[country as keyof TransformedMajorDestinationData] as number
-          })
-        })
-        
-        // Convert totals to bar chart data
-        const barChartData = allCountries.map(country => ({
-          country,
-          total: totals[country]
-        })).sort((a, b) => b.total - a.total) // Sort by total in descending order
-
-
-        setChartData(transformed)
-        setBarChartData(barChartData)
-        setLoading(false) 
+      if (data.length === 0) {
+        setError('No major destination data found in Firebase. Please upload data first.')
+        setLoading(false)
+        return
       }
-    })
 
-  }, [csvPath])
+      // Extract country names
+      const firstEntry = data[0]
+      const allCountries = Object.keys(firstEntry).filter(key => key !== 'Year')
+      setCountries(allCountries)
+
+      // Transform data
+      const transformed: TransformedMajorDestinationData[] = data.map(item => ({
+        YEAR: item.Year,
+        USA: item.USA,
+        CANADA: item.CANADA,
+        JAPAN: item.JAPAN,
+        AUSTRALIA: item.AUSTRALIA,
+        ITALY: item.ITALY,
+        'NEW ZEALAND': item['NEW ZEALAND'],
+        'UNITED KINGDOM': item['UNITED KINGDOM'],
+        GERMANY: item.GERMANY,
+        'SOUTH KOREA': item['SOUTH KOREA'],
+        SPAIN: item.SPAIN,
+        OTHERS: item.OTHERS
+      }))
+
+      // Calculate totals for bar chart
+      const totals: { [key: string]: number } = {}
+      allCountries.forEach(country => {
+        totals[country] = 0
+      })
+      
+      transformed.forEach(yearData => {
+        allCountries.forEach(country => {
+          totals[country] += yearData[country as keyof TransformedMajorDestinationData] as number
+        })
+      })
+      
+      // Convert totals to bar chart data
+      const barData = allCountries.map(country => ({
+        country,
+        total: totals[country]
+      })).sort((a, b) => b.total - a.total)
+
+      setChartData(transformed)
+      setBarChartData(barData)
+      setLoading(false)
+      console.log('✅ Successfully loaded major destination data from Firebase')
+    } catch (err) {
+      console.error('Error fetching major destination data from Firebase:', err)
+      setError('Failed to load major destination data from Firebase. Please check your connection.')
+      setLoading(false)
+    }
+  }
 
   return {
     chartData,
     barChartData,
     countries,
-    loading
+    loading,
+    error
   }
 }

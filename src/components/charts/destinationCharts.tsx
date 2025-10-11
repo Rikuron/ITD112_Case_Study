@@ -13,15 +13,26 @@ import {
 } from 'recharts'
 import { useParseMajorDestinationData } from '../../hooks/useParseMajorDestinationData'
 import ChoroplethMap from './choroplethMap'
-
-// const allDestinationDataCSV = '/data/Emigrant-1981-2020-AllCountries.csv'
-const majorDestinationDataCSV = '/data/Emigrant-1981-2020-MajorCountry.csv'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const DestinationCharts = () => {
-  const { chartData, barChartData, countries, loading } = useParseMajorDestinationData(majorDestinationDataCSV)
+  const { chartData, barChartData, countries, loading, error } = useParseMajorDestinationData()
+  const isMobile = useIsMobile()
 
-  // Show loading message
-  if (loading) return <div>Loading...</div>
+  if (loading) return (
+    <div className="text-white text-center p-8">
+      <div className="animate-pulse">Loading destination data from Firebase...</div>
+    </div>
+  )
+
+  if (error) {
+    return (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+        <p className="font-bold">⚠️ Error Loading Data</p>
+        <p>{error}</p>
+      </div>
+    )
+  }
 
   const colors = [
     '#1e90ff', '#32cd32', '#ff8c00', '#8a2be2', '#a9a9a9',
@@ -78,67 +89,85 @@ const DestinationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By MAJOR Destination Country (1981 - 2020)</h2>
         
-        <ResponsiveContainer width="100%" height={525}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
-            <XAxis dataKey="YEAR" angle={-45} textAnchor="end" height={70} />
-            <YAxis 
-              domain={[0, 50000]}
-              tickCount={11}
-            />
-            <Tooltip 
-              wrapperStyle={{ zIndex: 10 }} 
-              contentStyle={{
-                backgroundColor: '#2A324A',
-                border: '1px solid #3661E2',
-                borderRadius: '8px',
-                color: '#ffffff',
-                fontSize: '14px',
-                fontFamily: 'Inter, sans-serif'
-              }}
-              labelStyle={{
-                color: '#3661E2',
-                fontWeight: 'bold',
-                marginBottom: '8px'
-              }}
-            />
-            <Legend wrapperStyle={{ zIndex: 1 }} />
+        <div className={isMobile ? "overflow-x-auto" : ""}>
+          <div style={{ minWidth: isMobile ? '600px' : 'auto' }}>
+            <ResponsiveContainer width="100%" height={525}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
+                <XAxis dataKey="YEAR" angle={-45} textAnchor="end" height={70} />
+                <YAxis 
+                  domain={[0, 50000]}
+                  tickCount={11}
+                />
+                <Tooltip 
+                  wrapperStyle={{ zIndex: 10 }} 
+                  contentStyle={{
+                    backgroundColor: '#2A324A',
+                    border: '1px solid #3661E2',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontFamily: 'Inter, sans-serif'
+                  }}
+                  labelStyle={{
+                    color: '#3661E2',
+                    fontWeight: 'bold',
+                    marginBottom: '8px'
+                  }}
+                />
+                <Legend wrapperStyle={{ zIndex: 1 }} />
 
-            {countries.map((country, i) => (
-              <Line key={country} type="monotone" dataKey={country} stroke={colors[i % colors.length]} name={country} />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+                {countries.map((country, i) => (
+                  <Line key={country} type="monotone" dataKey={country} stroke={colors[i % colors.length]} name={country} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Bar Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Total Emigrants by MAJOR Destination Country (1981 - 2020)</h2>
-        <ResponsiveContainer width="100%" height={550}>
-          <BarChart 
-            data={barChartData} 
-            layout="vertical"
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
-            <XAxis 
-              type="number" 
-              tickFormatter={(value) => value.toLocaleString()}
-              domain={[0, 2000000]}
-              tickCount={11}
-            />
-            <YAxis 
-              type="category" 
-              dataKey="country" 
-              width={110}
-            />
-            <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 10 }} />
-            <Bar dataKey="total" name="Total Emigrants">
-              {barChartData.map((_entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        
+        <div className={isMobile ? "overflow-x-auto" : ""}>
+          <div style={{ minWidth: isMobile ? '650px' : 'auto' }}>
+            <ResponsiveContainer width="100%" height={550}>
+              <BarChart 
+                data={barChartData} 
+                layout="vertical"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
+                <XAxis 
+                  type="number" 
+                  tickFormatter={(value) => {
+                    if (value === 0) return '0'
+                    if (value >= 1000000) {
+                      return `${(value / 1000000).toFixed(1)}m`
+                    } else if (value >= 1000) {
+                      return `${(value / 1000).toFixed(0)}k`
+                    } 
+                    return value.toString()
+                  }}
+                  domain={[0, 2000000]}
+                  tickCount={11}
+                  className={isMobile ? 'text-xs' : 'text-sm'}
+                />
+                <YAxis 
+                  type="category" 
+                  dataKey="country" 
+                  width={110}
+                />
+                <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 10 }} />
+                <Bar dataKey="total" name="Total Emigrants">
+                  {barChartData.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ResponsiveChoropleth } from '@nivo/geo'
 import { useParseAllDestinationData } from '../../hooks/useParseAllDestinationData'
-
-const allDestinationDataCSV = '/data/Emigrant-1981-2020-AllCountries.csv'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 // Country name mapping from CSV to GeoJSON ISO codes
 const countryMapping: Record<string, string> = {
@@ -185,10 +184,11 @@ const countryMapping: Record<string, string> = {
 }
 
 const ChoroplethMap = () => {
-  const { mapData, loading } = useParseAllDestinationData(allDestinationDataCSV)
+  const { mapData, loading } = useParseAllDestinationData()
   const [geoData, setGeoData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-
+  const isMobile = useIsMobile()
+  
   useEffect(() => {
     fetch('/data/worldCountries.json')
       .then(res => {
@@ -205,7 +205,12 @@ const ChoroplethMap = () => {
       })
   }, [])
 
-  if (error) return <div className="text-white p-6">Error: {error}</div>
+  if (error) return (
+    <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+      <p className="font-bold">⚠️ Error Loading Data</p>
+      <p>{error}</p>
+    </div>
+  )
   if (loading || !geoData) return <div className="text-white p-6">Loading map...</div>
 
   // Transform data for Nivo Choropleth format
@@ -229,38 +234,40 @@ const ChoroplethMap = () => {
         Emigrant Destination of Filipinos by Country (1981 - 2020)
       </h2>
 
-      <div style={{ height: '600px' }}>
-        <ResponsiveChoropleth
-          data={nivoData}
-          features={geoData.features}
-          margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-          colors={['#1E293B', '#155E75', '#0D9488', '#2DD4BF', '#5EEAD4']}
-          domain={[0, 4]}
-          unknownColor="#1e293b"
-          label="properties.name"
-          valueFormat={(value) => {
-            const country = nivoData.find(item => item.value === value)
-            return country ? country.total.toLocaleString() : value.toString()
-          }}
-          tooltip={({ feature }) => (
-            <div style={{
-              background: '#2A324A',
-              border: '1px solid #3661E2',
-              borderRadius: '8px',
-              padding: '10px',
-              color: '#ffffff'
-            }}>
-              <strong>{feature.label}</strong><br />
-              Total: {feature.data?.total?.toLocaleString() || 'N/A'}
-            </div>
-          )}
-          projectionScale={130}
-          projectionTranslation={[0.5, 0.6]}
-          projectionRotation={[0, 0, 0]}
-          enableGraticule={false}
-          borderWidth={0.5}
-          borderColor="#3661E2"
-        />
+      <div className={isMobile ? 'overflow-x-auto' : ''}>
+        <div style={{ width: isMobile ? '900px' : '100%', height: '650px' }}>
+          <ResponsiveChoropleth
+            data={nivoData}
+            features={geoData.features}
+            margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+            colors={['#1E293B', '#155E75', '#0D9488', '#2DD4BF', '#5EEAD4']}
+            domain={[0, 4]}
+            unknownColor="#1e293b"
+            label="properties.name"
+            valueFormat={(value) => {
+              const country = nivoData.find(item => item.value === value)
+              return country ? country.total.toLocaleString() : value.toString()
+            }}
+            tooltip={({ feature }) => (
+              <div style={{
+                background: '#2A324A',
+                border: '1px solid #3661E2',
+                borderRadius: '8px',
+                padding: '10px',
+                color: '#ffffff'
+              }}>
+                <strong>{feature.label}</strong><br />
+                Total: {feature.data?.total?.toLocaleString() || 'N/A'}
+              </div>
+            )}
+            projectionScale={130}
+            projectionTranslation={[0.5, 0.6]}
+            projectionRotation={[0, 0, 0]}
+            enableGraticule={false}
+            borderWidth={0.5}
+            borderColor="#3661E2"
+          />
+        </div>
       </div>
 
       {/* Custom Legend */}

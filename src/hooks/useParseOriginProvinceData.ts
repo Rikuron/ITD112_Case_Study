@@ -1,54 +1,75 @@
 import { useEffect, useState } from 'react'
-import Papa from 'papaparse'
+import { getAllProvinceData } from '../api/originService'
 
 const normalizeName = (s: string) =>
   (s || '')
-    .toUpperCase()
-    .trim()
-    .replace(/\s*\([^)]*\)\s*/g, ' ') // drop parenthetical notes
-    .replace(/\s+/g, ' ')
-    .trim()
+  .toUpperCase()
+  .trim()
+  .replace(/\s*\([^)]*\)\s*/g, ' ') // drop parenthetical notes
+  .replace(/\s+/g, ' ')
+  .trim()
 
 type ProvinceTotals = Record<string, number>
 
-export const useParseOriginProvinceData = (csvPath: string) => {
+export const useParseOriginProvinceData = () => {
   const [totals, setTotals] = useState<ProvinceTotals>({})
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    Papa.parse(csvPath, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const rows = (results.data as Record<string, string>[]).filter(Boolean)
-        const t: ProvinceTotals = {}
+    fetchFromFirebase()
+  }, [])
 
-        rows.forEach((row) => {
-          const raw = (row.PROVINCE || row.REGION || '').toString()
-          if (!raw) return
-          const name = normalizeName(raw)
-          if (name === 'NCR') return // GeoJSON splits NCR into districts, skip the pseudo-province
+  const fetchFromFirebase = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-          let sum = 0
-          for (const k of Object.keys(row)) {
-            if (k === 'PROVINCE' || k === 'REGION') continue
-            const v = parseInt(row[k] as string, 10)
-            if (!Number.isNaN(v)) sum += v
+      const data = await getAllProvinceData()
+
+      if (data.length === 0) {
+        setError('No province data found in Firebase. Please upload data first.')
+        setLoading(false)
+        return
+      }
+
+      const t: ProvinceTotals = {}
+
+      // Get all provinces
+      const provinceNames = Object.keys(data[0]).filter(key => key !== 'Year')
+
+      // Calculate totals for each province
+      provinceNames.forEach(rawProvince => {
+        const name = normalizeName(rawProvince)
+        if (name === 'NCR') return // Skip NCR since my GeoJSON data splits it into districts
+
+        let sum = 0
+        data.forEach(yearData => {
+          const value = yearData[rawProvince]
+          if (typeof value === 'number' && !Number.isNaN(value)) {
+            sum += value
           }
-          t[name] = sum
         })
 
-        const values = Object.values(t)
-        setTotals(t)
-        setMin(values.length ? Math.min(...values) : 0)
-        setMax(values.length ? Math.max(...values) : 0)
-        setLoading(false)
-      }
-    })
-  }, [csvPath])
+        if (sum > 0) {
+          t[name] = sum
+        }
+      })
 
-  return { totals, min, max, loading }
+      const values = Object.values(t)
+      setTotals(t)
+      setMin(values.length ? Math.min(...values) : 0)
+      setMax(values.length ? Math.max(...values) : 0)
+      setLoading(false)
+      console.log('✅ Successfully loaded province data from Firebase')
+    } catch (err) {
+      console.error('Error fetching province data from Firebase:', err)
+      setError('Failed to load province data from Firebase. Please check your connection.')
+      setLoading(false)
+    }
+  }
+
+  return { totals, min, max, loading, error }
 }

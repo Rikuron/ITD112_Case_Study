@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Papa from 'papaparse'
+import { getAllOccupationData } from '../api/occupationService'
 
 interface TransformedOccupationData {
   Year: number
@@ -16,76 +16,73 @@ interface UseParseOccupationDataReturn {
   occupations: string[]
   treemapData: TreemapData[]
   loading: boolean
+  error: string | null
 }
 
-export const useParseOccupationData = (csvPath: string): UseParseOccupationDataReturn => {
+export const useParseOccupationData = (): UseParseOccupationDataReturn => {
   const [chartData, setChartData] = useState<TransformedOccupationData[]>([])
   const [occupations, setOccupations] = useState<string[]>([])
   const [treemapData, setTreemapData] = useState<TreemapData[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Hook to Parse Occupation Data
   useEffect(() => {
-    Papa.parse(csvPath, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const rawData = results.data as Record<string, string>[]
+    fetchFromFirebase()
+  }, [])
 
-        // If data is empty, return
-        if (rawData.length === 0) return
+  const fetchFromFirebase = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        // Extract Occupations from first column
-        const allOccupations = rawData.map((row) => row['Occupation']).filter(Boolean)
-        setOccupations(allOccupations)
+      console.log('Fetching occupation data from Firebase...')
+      const data = await getAllOccupationData()
 
-        // Get all year columns
-        // Get all cells from first row except first cell
-        const yearColumns = Object.keys(rawData[0]).filter(key => key !== 'Occupation')
-
-        // Transform data into structured format
-        const transformed = yearColumns.map((year) => {
-          const yearData: TransformedOccupationData = { Year: parseInt(year, 10) }
-
-          rawData.forEach(row => {
-            const occupation = row.Occupation
-            const value = parseInt(row[year], 10)
-            if (occupation) yearData[occupation] = isNaN(value) ? 0 : value
-          })
-
-          return yearData
-        })
-
-        setChartData(transformed)
-
-        // Calculate totals for treemap
-        const totals: { [key: string]: number } = {}
-        allOccupations.forEach(occupation => {
-          totals[occupation] = 0
-        })
-
-        transformed.forEach(yearData => {
-          allOccupations.forEach(occupation => {
-            totals[occupation] += yearData[occupation]
-          })
-        })
-
-        const treemap = allOccupations.map(occupation => ({
-          name: occupation,
-          value: totals[occupation]
-        }))
-
-        setTreemapData(treemap)
+      if (data.length === 0) {
+        console.warn('No occupation data found in Firebase. Please upload data first.')
         setLoading(false)
+        return
       }
-    })
-  }, [csvPath])
+
+      // Extract occupations from first data entry
+      const firstEntry = data[0]
+      const allOccupations = Object.keys(firstEntry).filter(key => key !== 'Year')
+      setOccupations(allOccupations)
+
+      // Calculate totals for treemap
+      const totals: { [key: string]: number } = {}
+      allOccupations.forEach(occupation => {
+        totals[occupation] = 0
+      })
+
+      data.forEach(yearData => {
+        allOccupations.forEach(occupation => {
+          totals[occupation] += yearData[occupation] || 0
+        })
+      })
+
+      const treemap = allOccupations.map(occupation => ({
+        name: occupation,
+        value: totals[occupation]
+      }))
+
+      setChartData(data)
+      setTreemapData(treemap)
+      setLoading(false)
+      console.log('Successfully loaded data from Firebase')
+    } catch (err) {
+      console.error('Error fetching occupation data from Firebase:', err)
+      setError('Failed to load occupation data from Firebase')
+      setLoading(false)
+    }
+  }
 
   return {
     chartData,
     occupations,
     treemapData,
-    loading
+    loading,
+    error
   }
 }

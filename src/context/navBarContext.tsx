@@ -1,10 +1,12 @@
 import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 interface NavBarContextType {
   isHovering: boolean
   setIsHovering: (hovering: boolean) => void
   navBarWidth: string
+  isMobile: boolean
 }
 
 const NavBarContext = createContext<NavBarContextType | undefined>(undefined)
@@ -19,11 +21,13 @@ export const useNavBar = () => {
 
 export const NavBarProvider = ({ children }: { children: ReactNode }) => {
   const [isHovering, setIsHovering] = useState(false)
-
+  const isMobile = useIsMobile()
+  
   const value = {
     isHovering,
     setIsHovering,
-    navBarWidth: isHovering ? '20%' : '5%',
+    navBarWidth: isMobile ? '100%' : (isHovering ? '20%' : '5%'),
+    isMobile
   }
 
   return (

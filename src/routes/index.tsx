@@ -25,8 +25,8 @@ const chartComponents = {
 type ChartKey = keyof typeof chartComponents;
 
 function Index() {
-  const [selectedChart, setSelectedChart] = useState<ChartKey>('origin');
-
+  const [selectedChart, setSelectedChart] = useState<ChartKey>('destination');
+  
   return (
     <div className="p-6 bg-primary min-h-screen">
       <div className="max-w-7xl mx-auto">

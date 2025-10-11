@@ -13,14 +13,27 @@ import {
 } from 'recharts'
 import OriginChoropleth from './originChoropleth'
 import { useParseOriginData } from '../../hooks/useParseOriginData'
-
-const originDataCSV = '/data/Emigrant-1988-2020-PlaceOfOrigin.csv'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const OriginCharts = () => {
-  const { chartData, barChartData, regions, loading } = useParseOriginData(originDataCSV)
+  const { chartData, barChartData, regions, loading, error } = useParseOriginData()
+  const isMobile = useIsMobile()
 
   // Show loading message
-  if (loading) return <div>Loading...</div>
+  if (loading) return (
+    <div className="text-white text-center p-8">
+      <div className="animate-pulse">Loading Age data from Firebase...</div>
+    </div>
+  )
+
+  if (error) {
+    return (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
+        <p className="font-bold">⚠️ Error Loading Data</p>
+        <p>{error}</p>
+      </div>
+    )
+  }
 
   const colors = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F',
@@ -108,49 +121,54 @@ const OriginCharts = () => {
           Emigration Trends By Region of Origin (1988 - 2020)
         </h2>
 
-        <ResponsiveContainer width="100%" height={600}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
-            <XAxis dataKey="YEAR" angle={-45} textAnchor="end" height={70} />
-            <YAxis 
-              domain={[0, 30000]}
-              tickCount={11}
-            />
-            <Tooltip 
-              wrapperStyle={{ zIndex: 10 }} 
-              contentStyle={{
-                backgroundColor: '#2A324A',
-                border: '1px solid #3661E2',
-                borderRadius: '8px',
-                color: '#ffffff',
-                fontSize: '14px',
-                fontFamily: 'Inter, sans-serif'
-              }}
-              labelStyle={{
-                color: '#3661E2',
-                fontWeight: 'bold',
-                marginBottom: '8px'
-              }}
-            />
-            <Legend 
-              wrapperStyle={{ zIndex: 1 }} 
-              iconType="line"
-              layout="horizontal"
-              align="center"
-              verticalAlign="bottom"
-            />
+        <div className={isMobile ? 'overflow-x-auto' : ''}>
+          <div style={{ width: isMobile ? '1400px' : 'auto' }}>
+            <ResponsiveContainer width="100%" height={600}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
+                <XAxis dataKey="YEAR" angle={-45} textAnchor="end" height={70} />
+                <YAxis 
+                  domain={[0, 30000]}
+                  tickCount={11}
+                />
+                <Tooltip 
+                  wrapperStyle={{ zIndex: 10 }} 
+                  contentStyle={{
+                    backgroundColor: '#2A324A',
+                    border: '1px solid #3661E2',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontFamily: 'Inter, sans-serif'
+                  }}
+                  labelStyle={{
+                    color: '#3661E2',
+                    fontWeight: 'bold',
+                    marginBottom: '8px'
+                  }}
+                />
+                <Legend 
+                  wrapperStyle={{ zIndex: 1 }} 
+                  iconType="line"
+                  layout="horizontal"
+                  align="center"
+                  verticalAlign="bottom"
+                  formatter={(region) => getRegionShorthand(region)}
+                />
 
-            {regions.map((region, i) => (
-              <Line 
-                key={region} 
-                type="monotone" 
-                dataKey={region} 
-                stroke={colors[i % colors.length]} 
-                name={region}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+                {regions.map((region, i) => (
+                  <Line 
+                    key={region} 
+                    type="monotone" 
+                    dataKey={region} 
+                    stroke={colors[i % colors.length]} 
+                    name={(region)}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Bar Chart - All Regions */}
@@ -158,35 +176,48 @@ const OriginCharts = () => {
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
           Total Emigrants by Region (1988 - 2020)
         </h2>
-        <ResponsiveContainer width="100%" height={600}>
-          <BarChart 
-            data={barChartDataWithShorthand} 
-            layout="vertical"
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
-            <XAxis 
-              type="number" 
-              tickFormatter={(value) => value.toLocaleString()}
-              domain={[0, 700000]}
-              tickCount={15}
-            />
-            <YAxis 
-              type="category" 
-              dataKey="shorthand" 
-              style={{ fontSize: '14px' }}
-              width={90}
-            />
-            <Tooltip 
-              content={(props) => CustomBarTooltip(props, colors)} 
-              wrapperStyle={{ zIndex: 10 }} 
-            />
-            <Bar dataKey="total" name="Total Emigrants">
-              {barChartDataWithShorthand.map((_entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        
+        <div className={isMobile ? 'overflow-x-auto' : ''}>
+          <div style={{ width: isMobile ? '1000px' : 'auto' }}>
+            <ResponsiveContainer width="100%" height={600}>
+              <BarChart 
+                data={barChartDataWithShorthand} 
+                layout="vertical"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
+                <XAxis 
+                  type="number" 
+                  tickFormatter={(value) => {
+                    if (value === 0) return '0'
+                    if (value >= 1000000) {
+                      return `${(value / 1000000).toFixed(1)}m`
+                    } else if (value >= 1000) {
+                      return `${(value / 1000).toFixed(0)}k`
+                    }
+                    return value.toString()
+                  }}
+                  domain={[0, 700000]}
+                  tickCount={15}
+                />
+                <YAxis 
+                  type="category" 
+                  dataKey="shorthand" 
+                  style={{ fontSize: '14px' }}
+                  width={90}
+                />
+                <Tooltip 
+                  content={(props) => CustomBarTooltip(props, colors)} 
+                  wrapperStyle={{ zIndex: 10 }} 
+                />
+                <Bar dataKey="total" name="Total Emigrants">
+                  {barChartDataWithShorthand.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Choropleth Map */}
