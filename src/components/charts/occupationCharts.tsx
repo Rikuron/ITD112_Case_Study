@@ -9,6 +9,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import { useParseOccupationData } from '../../hooks/useParseOccupationData'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import TreemapNivo from './treemapNivo'
 
 const occupationLabelMap: Record<string, string> = {
@@ -36,6 +37,7 @@ const customTooltipFormatter = (value: any, name: string) => {
 
 const OccupationCharts = () => {
   const { chartData, occupations, treemapData, loading, error } = useParseOccupationData()
+  const isMobile = useIsMobile()
 
   // Show loading message
   if (loading) return (
@@ -65,38 +67,42 @@ const OccupationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Occupation (1981 - 2020)</h2>
         
-        <ResponsiveContainer width="100%" height={600}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
-            <XAxis dataKey="Year" angle={-45} textAnchor="end" height={70} />
-            <YAxis 
-              domain={[0, 30000]}
-              tickCount={11}
-            />
-            <Tooltip 
-              wrapperStyle={{ zIndex: 10 }} 
-              contentStyle={{
-                backgroundColor: '#2A324A',
-                border: '1px solid #3661E2',
-                borderRadius: '8px',
-                color: '#ffffff',
-                fontSize: '14px',
-                fontFamily: 'Inter, sans-serif'
-              }}
-              labelStyle={{
-                color: '#3661E2',
-                fontWeight: 'bold',
-                marginBottom: '8px'
-              }}
-              formatter={customTooltipFormatter}
-            />
-            <Legend wrapperStyle={{ zIndex: 1 }} />
+        <div className={isMobile ? 'overflow-x-auto' : ''}>
+          <div style={{ width: isMobile ? '600px' : 'auto' }}>
+            <ResponsiveContainer width="100%" height={600}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
+                <XAxis dataKey="Year" angle={-45} textAnchor="end" height={70} />
+                <YAxis 
+                  domain={[0, 30000]}
+                  tickCount={11}
+                />
+                <Tooltip 
+                  wrapperStyle={{ zIndex: 10 }} 
+                  contentStyle={{
+                    backgroundColor: '#2A324A',
+                    border: '1px solid #3661E2',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontFamily: 'Inter, sans-serif'
+                  }}
+                  labelStyle={{
+                    color: '#3661E2',
+                    fontWeight: 'bold',
+                    marginBottom: '8px'
+                  }}
+                  formatter={customTooltipFormatter}
+                />
+                <Legend wrapperStyle={{ zIndex: 1 }} />
 
-            {occupations.map((occupation, i) => (
-              <Line key={occupation} type="monotone" dataKey={occupation} stroke={colors[i % colors.length]} name={occupation} />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+                {occupations.map((occupation, i) => (
+                  <Line key={occupation} type="monotone" dataKey={occupation} stroke={colors[i % colors.length]} name={occupation} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
       </div>
 
@@ -104,11 +110,16 @@ const OccupationCharts = () => {
       {/* Treemap Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Total Emigration Composition By Occupation Category (1981 - 2020)</h2>
-        <TreemapNivo 
-          key={`treemap-${treemapData.length}`}
-          data={treemapData} 
-          occupationLabelMap={occupationLabelMap} 
-        />
+        
+        <div className={isMobile ? 'overflow-x-auto' : ''}>
+          <div style={{ width: isMobile ? '600px' : 'auto' }}>
+            <TreemapNivo 
+              key={`treemap-${treemapData.length}`}
+              data={treemapData} 
+              occupationLabelMap={occupationLabelMap} 
+            />
+          </div>
+        </div>
       </div>
 
 

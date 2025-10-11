@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ResponsiveChoropleth } from '@nivo/geo'
 import { useParseOriginProvinceData } from '../../hooks/useParseOriginProvinceData'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const normalizeName = (s: string) =>
   (s || '')
@@ -16,7 +17,8 @@ const PHOriginChoropleth = () => {
   const { totals, min, max, loading, error: dataError } = useParseOriginProvinceData()
   const [features, setFeatures] = useState<any[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-
+  const isMobile = useIsMobile()
+  
   useEffect(() => {
     fetch(provinceGeoPath)
     .then((r) => {
@@ -55,39 +57,41 @@ const PHOriginChoropleth = () => {
         Emigrant Origin Density by Province (1988 - 2020)
       </h2>
 
-      <div style={{ height: '600px' }}>
-        <ResponsiveChoropleth
-          data={data}
-          features={features}
-          margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-          colors={['#0b1020', '#1e3a8a', '#2563eb', '#60a5fa', '#93c5fd']}
-          domain={[min, max]}
-          unknownColor="#1e293b"
-          label="properties.PROVINCE"
-          valueFormat={(v) => Number(v).toLocaleString()}
-          tooltip={({ feature }: any) => (
-            <div
-              style={{
-                background: '#2A324A',
-                border: '1px solid #3661E2',
-                borderRadius: '8px',
-                padding: '10px',
-                color: '#ffffff'
-              }}
-            >
-              <strong>{feature.properties?.PROVINCE}</strong>
-              <br />
-              Total: {feature.data?.total?.toLocaleString() || 'N/A'}
-            </div>
-          )}
-          // Tuned to center/scale PH; adjust if needed
-          projectionScale={2000}
-          projectionTranslation={[0.5, 0.72]}
-          projectionRotation={[-122, -8.5, 0]}
-          enableGraticule={false}
-          borderWidth={0.5}
-          borderColor="#3661E2"
-        />
+      <div className={isMobile ? 'overflow-x-auto' : ''}>
+        <div style={{ width: isMobile ? '600px' : '100%', height: '600px' }}>
+          <ResponsiveChoropleth
+            data={data}
+            features={features}
+            margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+            colors={['#0b1020', '#1e3a8a', '#2563eb', '#60a5fa', '#93c5fd']}
+            domain={[min, max]}
+            unknownColor="#1e293b"
+            label="properties.PROVINCE"
+            valueFormat={(v) => Number(v).toLocaleString()}
+            tooltip={({ feature }: any) => (
+              <div
+                style={{
+                  background: '#2A324A',
+                  border: '1px solid #3661E2',
+                  borderRadius: '8px',
+                  padding: '10px',
+                  color: '#ffffff'
+                }}
+              >
+                <strong>{feature.properties?.PROVINCE}</strong>
+                <br />
+                Total: {feature.data?.total?.toLocaleString() || 'N/A'}
+              </div>
+            )}
+            // Tuned to center/scale PH; adjust if needed
+            projectionScale={2000}
+            projectionTranslation={[0.5, 0.72]}
+            projectionRotation={[-122, -8.5, 0]}
+            enableGraticule={false}
+            borderWidth={0.5}
+            borderColor="#3661E2"
+          />
+        </div>
       </div>
     </div>
   )
