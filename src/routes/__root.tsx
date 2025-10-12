@@ -5,6 +5,7 @@ import { TanstackDevtools } from '@tanstack/react-devtools'
 import Header from '../components/header'
 import NavBar from '../components/navBar'
 import { NavBarProvider } from '../context/navBarContext'
+import { AuthProvider } from '../context/authContext'
 import { useNavBarWidth } from '../hooks/useNavBarWidth'
 import { useNavBar } from '../context/navBarContext'
 
@@ -42,21 +43,23 @@ const RootLayout = () => {
 export const Route = createRootRoute({
   component: () => {
     return (
-      <NavBarProvider>
-        <RootLayout />
-        
-        <TanstackDevtools
-          config={{
-            position: 'bottom-left',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
-      </NavBarProvider>
+      <AuthProvider>
+        <NavBarProvider>
+          <RootLayout />
+          
+          <TanstackDevtools
+            config={{
+              position: 'bottom-left',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        </NavBarProvider>
+      </AuthProvider>
     )
   },
 })
