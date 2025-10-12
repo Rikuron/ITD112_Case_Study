@@ -49,7 +49,7 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
+    <div className="mt-15 flex items-center justify-center bg-primary px-4">
       <div className="max-w-md w-full space-y-8 bg-secondary p-8 rounded-lg shadow-lg border border-highlights">
         <div>
           <h2 className="text-center text-3xl font-bold text-white">
@@ -120,7 +120,7 @@ function Login() {
             className="w-full flex justify-center py-2.5 px-4 border border-transparent 
                      rounded-md shadow-sm text-sm font-medium text-white bg-highlights 
                      hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 
-                     focus:ring-highlights disabled:opacity-50 disabled:cursor-not-allowed"
+                     focus:ring-highlights disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? 'Processing...' : isResetMode ? 'Send Reset Link' : 'Sign In'}
           </button>
@@ -133,7 +133,7 @@ function Login() {
                 setError('')
                 setResetMessage('')
               }}
-              className="text-highlights hover:underline"
+              className="text-highlights hover:underline cursor-pointer"
             >
               {isResetMode ? '← Back to Sign In' : 'Forgot Password?'}
             </button>
@@ -141,7 +141,7 @@ function Login() {
             <button
               type="button"
               onClick={() => navigate({ to: '/register' })}
-              className="text-highlights hover:underline"
+              className="text-highlights hover:underline cursor-pointer"
             >
               Create Account
             </button>

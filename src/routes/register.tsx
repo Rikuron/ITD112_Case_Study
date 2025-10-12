@@ -44,7 +44,7 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
+    <div className="my-15 flex items-center justify-center bg-primary px-4">
       <div className="max-w-md w-full space-y-8 bg-secondary p-8 rounded-lg shadow-lg border border-highlights">
         <div>
           <h2 className="text-center text-3xl font-bold text-white">
@@ -137,7 +137,7 @@ function Register() {
             className="w-full flex justify-center py-2.5 px-4 border border-transparent 
                      rounded-md shadow-sm text-sm font-medium text-white bg-highlights 
                      hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 
-                     focus:ring-highlights disabled:opacity-50 disabled:cursor-not-allowed"
+                     focus:ring-highlights disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
@@ -146,7 +146,7 @@ function Register() {
             <button
               type="button"
               onClick={() => navigate({ to: '/login' })}
-              className="text-sm text-highlights hover:underline"
+              className="text-sm text-highlights hover:underline cursor-pointer"
             >
               Already have an account? Sign In
             </button>

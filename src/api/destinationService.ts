@@ -3,6 +3,7 @@ import {
   getDataByYear,
   getAllData,
   updateDataByYear,
+  deleteDataByYear,
   getAvailableYears,
   getCategories
 } from './baseService'
@@ -46,6 +47,10 @@ export const updateMajorDestinationData = async (year: number, updates: Partial<
   await updateDataByYear(MAJOR_DESTINATION_COLLECTION, year, updates as Record<string, number>)
 }
 
+export const deleteMajorDestinationData = async (year: number) => {
+  await deleteDataByYear(MAJOR_DESTINATION_COLLECTION, year)
+}
+
 export const getAvailableMajorDestinationYears = async (): Promise<number[]> => {
   return await getAvailableYears(MAJOR_DESTINATION_COLLECTION)
 }
@@ -83,6 +88,10 @@ export const getAllAllDestinationData = async (): Promise<AllDestinationData[]> 
 
 export const updateAllDestinationData = async (year: number, updates: Record<string, number>) => {
   await updateDataByYear(ALL_DESTINATION_COLLECTION, year, updates as Record<string, number>)
+}
+
+export const deleteAllDestinationData = async (year: number) => {
+  await deleteDataByYear(ALL_DESTINATION_COLLECTION, year)
 }
 
 export const getAvailableAllDestinationYears = async (): Promise<number[]> => {

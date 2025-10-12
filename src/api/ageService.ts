@@ -3,6 +3,7 @@ import {
   getDataByYear,
   getAllData,
   updateDataByYear,
+  deleteDataByYear,
   getAvailableYears,
   getCategories
 } from './baseService'
@@ -47,6 +48,11 @@ export const getAllAgeData = async (): Promise<AgeData[]> => {
 // PUT 
 export const updateAgeData = async (year: number, updates: Partial<Omit<AgeData, 'Year'>>) => {
   await updateDataByYear(AGE_COLLECTION, year, updates as Record<string, number>)
+}
+
+// DELETE
+export const deleteAgeData = async (year: number) => {
+  await deleteDataByYear(AGE_COLLECTION, year)
 }
 
 // GET all available years

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadDataRouteImport } from './routes/uploadData'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ManageDataRouteImport } from './routes/manageData'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const UploadDataRoute = UploadDataRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageDataRoute = ManageDataRouteImport.update({
+  id: '/manageData',
+  path: '/manageData',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/manageData': typeof ManageDataRoute
   '/register': typeof RegisterRoute
   '/uploadData': typeof UploadDataRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/manageData': typeof ManageDataRoute
   '/register': typeof RegisterRoute
   '/uploadData': typeof UploadDataRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/manageData': typeof ManageDataRoute
   '/register': typeof RegisterRoute
   '/uploadData': typeof UploadDataRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register' | '/uploadData'
+  fullPaths: '/' | '/login' | '/manageData' | '/register' | '/uploadData'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/uploadData'
-  id: '__root__' | '/' | '/login' | '/register' | '/uploadData'
+  to: '/' | '/login' | '/manageData' | '/register' | '/uploadData'
+  id: '__root__' | '/' | '/login' | '/manageData' | '/register' | '/uploadData'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  ManageDataRoute: typeof ManageDataRoute
   RegisterRoute: typeof RegisterRoute
   UploadDataRoute: typeof UploadDataRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manageData': {
+      id: '/manageData'
+      path: '/manageData'
+      fullPath: '/manageData'
+      preLoaderRoute: typeof ManageDataRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  ManageDataRoute: ManageDataRoute,
   RegisterRoute: RegisterRoute,
   UploadDataRoute: UploadDataRoute,
 }

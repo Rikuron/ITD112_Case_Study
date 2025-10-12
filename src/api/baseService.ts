@@ -1,5 +1,5 @@
 import { db } from '../firebase'
-import { collection, getDoc, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, getDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore'
 
 // POST
 export const postDataToFirestore = async (
@@ -41,7 +41,25 @@ export const updateDataByYear = async (
   updates: Record<string, number>
 ) => {
   const docRef = doc(db, collectionPath, year.toString())
-  await updateDoc(docRef, updates)
+  await setDoc(docRef, updates, { merge: true })
+}
+
+// DELETE
+export const deleteDataByYear = async (
+  collectionPath: string,
+  year: number
+) => {
+  const docRef = doc(db, collectionPath, year.toString())
+  await deleteDoc(docRef)
+}
+
+// DELETE ALL
+export const deleteAllData = async (collectionPath: string) => {
+  const collectionRef = collection(db, collectionPath)
+  const snapshot = await getDocs(collectionRef)
+
+  const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref))
+  await Promise.all(deletePromises)
 }
 
 // GET available years for a collection

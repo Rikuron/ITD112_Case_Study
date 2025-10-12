@@ -1,9 +1,11 @@
 import { forwardRef } from 'react'
 import { AiFillDashboard } from 'react-icons/ai'
 import { HiUserAdd } from 'react-icons/hi'
-import { IoMenu, IoSettingsOutline } from 'react-icons/io5'
+import { IoMenu } from 'react-icons/io5'
+import { FaDatabase } from 'react-icons/fa'
 import { useNavBar } from '../context/navBarContext'
 import { Link } from '@tanstack/react-router'
+import { useAuth } from '../context/authContext'
 
 const navigationItems = [
   {
@@ -21,7 +23,8 @@ const navigationItems = [
 const NavBar = forwardRef<HTMLElement>((_props, ref) => {
   // State Variables
   const { isHovering, setIsHovering, navBarWidth, isMobile } = useNavBar()
-
+  const { hasPermission } = useAuth()
+  
   // Event Handlers
   const handleMouseEnter = () => {
     if (!isMobile) setIsHovering(true)
@@ -50,10 +53,15 @@ const NavBar = forwardRef<HTMLElement>((_props, ref) => {
               <span className="text-white text-xs">{item.name}</span>
             </Link>
           ))}
-          <button className="flex flex-col items-center justify-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors flex-1 hover:cursor-pointer duration-300 ease-in-out">
-            <IoSettingsOutline className="text-white text-2xl" />
-            <span className="text-white text-xs">Settings</span>
-          </button>
+          {hasPermission('write') && (
+            <Link 
+              to="/manageData"
+              className="flex flex-col items-center justify-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors flex-1 hover:cursor-pointer duration-300 ease-in-out"
+            >
+              <FaDatabase className="text-white text-2xl" />
+              <span className="text-white text-xs">Manage Data</span>
+            </Link>
+          )}
         </div>
       </nav>
     )
@@ -63,7 +71,7 @@ const NavBar = forwardRef<HTMLElement>((_props, ref) => {
   return (
     <nav 
       ref={ref}
-      className={`fixed top-0 left-0 z-100 bg-secondary h-screen transition-all duration-300 ease-in-out`}
+      className={`fixed top-0 left-0 z-100 bg-secondary h-screen transition-all duration-300 ease-in-out ${isHovering ? 'border-r-2 border-highlights' : ''}`}
       style={{ width: navBarWidth }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -86,16 +94,16 @@ const NavBar = forwardRef<HTMLElement>((_props, ref) => {
                 {isHovering && <span className="text-white text-sm whitespace-nowrap overflow-hidden">{item.name}</span>}
               </Link>
             ))}
+            {hasPermission('write') && (
+              <Link 
+                to="/manageData"
+                className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg transition-colors w-full hover:cursor-pointer duration-300 ease-in-out"
+              >
+                <span className={`flex-shrink-0 ${isHovering ? 'ml-3' : 'mx-auto'}`}><FaDatabase className="text-white text-2xl" /></span>
+                {isHovering && <span className="text-white text-sm whitespace-nowrap overflow-hidden">Manage Data</span>}
+              </Link>
+            )}
           </div>
-        </div>
-
-        <div className="flex-1" />
-
-        <div className="flex justify-center w-full">
-          <button className="flex items-center gap-3 p-3 hover:bg-white/10 rounded-lg transition-colors w-full hover:cursor-pointer duration-300 ease-in-out" onClick={handleMouseEnter}>
-            <IoSettingsOutline className={`text-white text-2xl flex-shrink-0 ${isHovering ? 'ml-3' : 'mx-auto'}`} />
-            {isHovering && <span className="text-white text-sm whitespace-nowrap overflow-hidden">Settings</span>}
-          </button>
         </div>
       </div>
     </nav>

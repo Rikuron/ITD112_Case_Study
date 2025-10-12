@@ -46,7 +46,7 @@ const AgeCharts = () => {
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Age Group (1981 - 2020)</h2>
 
         <div className={isMobile ? "overflow-x-auto" : ""}>
-          <div style={{ minWidth: isMobile ? '600px' : 'auto' }}>
+          <div style={{ minWidth: isMobile ? '900px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={525}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />

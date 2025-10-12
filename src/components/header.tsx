@@ -1,7 +1,6 @@
 import { forwardRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../context/authContext'
-// import { FaUser } from 'react-icons/fa'
 
 const Header = forwardRef<HTMLElement>((_props, ref) => {
   const { user, userProfile, signOut } = useAuth()
@@ -31,7 +30,7 @@ const Header = forwardRef<HTMLElement>((_props, ref) => {
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary border border-highlights hover:bg-highlights/20 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary border border-highlights hover:bg-highlights/20 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-highlights flex items-center justify-center">
@@ -59,13 +58,13 @@ const Header = forwardRef<HTMLElement>((_props, ref) => {
                 <div className="absolute right-0 mt-2 w-56 rounded-lg bg-secondary border border-highlights shadow-lg z-20">
                   <div className="p-4 border-b border-highlights">
                     <p className="text-white font-medium">{userProfile.displayName || 'User'}</p>
-                    <p className="text-sm text-gray-400">{userProfile.email}</p>
+                    <p className="text-sm text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">{userProfile.email}</p>
                     <p className="text-xs text-highlights mt-1 capitalize">Role: {userProfile.role}</p>
                   </div>
                   <div className="p-2">
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/20 rounded-md transition-colors"
+                      className="w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/20 rounded-md transition-colors cursor-pointer"
                     >
                       Sign Out
                     </button>
@@ -77,7 +76,7 @@ const Header = forwardRef<HTMLElement>((_props, ref) => {
         ) : (
           <button
             onClick={() => navigate({ to: '/login' })}
-            className="px-4 py-2 bg-highlights text-white rounded-lg hover:opacity-90 transition-opacity"
+            className="px-4 py-2 bg-highlights text-white rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
           >
             Sign In
           </button>
