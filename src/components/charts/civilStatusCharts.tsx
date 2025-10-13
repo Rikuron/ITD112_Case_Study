@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
     LineChart,
     Line,
@@ -12,11 +13,24 @@ import {
   } from 'recharts'
 import { useParseCivilStatusData } from '../../hooks/useParseCivilStatusData'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { COLUMN_ORDERS } from '../../utils/columnOrders'
 
 const CivilStatusCharts = () => {
   const { chartData, groupedChartData, civilStatusCategories, loading, error } = useParseCivilStatusData()
+  const [selectedCivilStatusCategories, setSelectedCivilStatusCategories] = useState<string[]>([])
   const isMobile = useIsMobile()
   
+  useEffect(() => {
+    if (civilStatusCategories.length > 0) setSelectedCivilStatusCategories(civilStatusCategories)
+  }, [civilStatusCategories])
+
+  // Civil Status Category Checkbox handler
+  const handleCivilStatusCategoryChange = (civilStatusCategory: string) => {
+    setSelectedCivilStatusCategories(prev =>
+      prev.includes(civilStatusCategory) ? prev.filter(cs => cs !== civilStatusCategory) : [...prev, civilStatusCategory]
+    )
+  }
+
   // Show loading message
   if (loading) return (
     <div className="text-white text-center p-8">
@@ -42,6 +56,21 @@ const CivilStatusCharts = () => {
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Civil Status (1988 - 2020)</h2>
+        
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
+          {COLUMN_ORDERS.civilStatus.map(civilStatusCategory => (
+            <label key={civilStatusCategory} className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedCivilStatusCategories.includes(civilStatusCategory)}
+                onChange={() => handleCivilStatusCategoryChange(civilStatusCategory)}
+                className="form-checkbox h-2.5 w-2.5 md:h-4 md:w-4 text-highlights rounded"
+                defaultChecked={selectedCivilStatusCategories.includes(civilStatusCategory)}
+              />
+              <span className="font-inter text-xs md:text-sm">{civilStatusCategory}</span>
+            </label>
+          ))}          
+        </div>
 
         <div className={isMobile ? "overflow-x-auto" : ""}>
           <div style={{ minWidth: isMobile ? '600px' : 'auto' }}>
@@ -72,7 +101,9 @@ const CivilStatusCharts = () => {
                 <Legend wrapperStyle={{ zIndex: 1 }} />
 
                 {civilStatusCategories.map((civilStatusCategory, i) => (
-                  <Line key={civilStatusCategory} type="monotone" dataKey={civilStatusCategory} stroke={colors[i % colors.length]} name={civilStatusCategory} />
+                  selectedCivilStatusCategories.includes(civilStatusCategory) && (
+                    <Line key={civilStatusCategory} type="monotone" dataKey={civilStatusCategory} stroke={colors[i % colors.length]} name={civilStatusCategory} />
+                  )
                 ))}
               </LineChart>
             </ResponsiveContainer>
@@ -83,6 +114,7 @@ const CivilStatusCharts = () => {
       {/* Stacked Bar Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigrants Trends By Civil Status (1988 - 2020)</h2>
+
         <div className={isMobile ? "overflow-x-auto" : ""}>
           <div style={{ minWidth: isMobile ? '600px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={500}>

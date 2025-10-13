@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -11,6 +12,7 @@ import {
 import { useParseOccupationData } from '../../hooks/useParseOccupationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import TreemapNivo from './treemapNivo'
+import { COLUMN_ORDERS } from '../../utils/columnOrders'
 
 const occupationLabelMap: Record<string, string> = {
   "Prof'l": "Prof'l, Tech'l, & Related Workers",
@@ -37,7 +39,19 @@ const customTooltipFormatter = (value: any, name: string) => {
 
 const OccupationCharts = () => {
   const { chartData, occupations, treemapData, loading, error } = useParseOccupationData()
+  const [selectedOccupations, setSelectedOccupations] = useState<string[]>([])
   const isMobile = useIsMobile()
+
+  useEffect(() => {
+    if (occupations.length > 0) setSelectedOccupations(occupations)
+  }, [occupations])
+
+  // Occupation Checkbox handler
+  const handleOccupationChange = (occupation: string) => {
+    setSelectedOccupations(prev =>
+      prev.includes(occupation) ? prev.filter(o => o !== occupation) : [...prev, occupation]
+    )
+  }
 
   // Show loading message
   if (loading) return (
@@ -67,6 +81,21 @@ const OccupationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Occupation (1981 - 2020)</h2>
         
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
+          {COLUMN_ORDERS.occupation.map(occupation => (
+            <label key={occupation} className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedOccupations.includes(occupation)}
+                onChange={() => handleOccupationChange(occupation)}
+                className="form-checkbox h-2.5 w-2.5 md:h-4 md:w-4 text-highlights rounded"
+                defaultChecked={selectedOccupations.includes(occupation)}
+              />
+              <span className="font-inter text-xs md:text-sm">{occupation}</span>
+            </label>
+          ))}
+        </div>
+
         <div className={isMobile ? 'overflow-x-auto' : ''}>
           <div style={{ width: isMobile ? '600px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={600}>
@@ -97,7 +126,9 @@ const OccupationCharts = () => {
                 <Legend wrapperStyle={{ zIndex: 1 }} />
 
                 {occupations.map((occupation, i) => (
-                  <Line key={occupation} type="monotone" dataKey={occupation} stroke={colors[i % colors.length]} name={occupation} />
+                  selectedOccupations.includes(occupation) && (
+                    <Line key={occupation} type="monotone" dataKey={occupation} stroke={colors[i % colors.length]} name={occupation} />
+                  )
                 ))}
               </LineChart>
             </ResponsiveContainer>

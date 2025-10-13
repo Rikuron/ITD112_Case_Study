@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -14,11 +15,24 @@ import {
 import { useParseMajorDestinationData } from '../../hooks/useParseMajorDestinationData'
 import ChoroplethMap from './choroplethMap'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { COLUMN_ORDERS } from '../../utils/columnOrders'
 
 const DestinationCharts = () => {
   const { chartData, barChartData, countries, loading, error } = useParseMajorDestinationData()
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([])
   const isMobile = useIsMobile()
 
+  useEffect(() => {
+    if (countries.length > 0) setSelectedCountries(countries)
+  }, [countries])
+
+  // Country Checkbox handler
+  const handleCountryChange = (country: string) => {
+    setSelectedCountries(prev =>
+      prev.includes(country) ? prev.filter(c => c !== country) : [...prev, country]
+    )
+  }
+  
   if (loading) return (
     <div className="text-white text-center p-8">
       <div className="animate-pulse">Loading destination data from Firebase...</div>
@@ -89,6 +103,21 @@ const DestinationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By MAJOR Destination Country (1981 - 2020)</h2>
         
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
+          {COLUMN_ORDERS.majorDestination.map(country => (
+            <label key={country} className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedCountries.includes(country)}
+                onChange={() => handleCountryChange(country)}
+                className="form-checkbox h-2.5 w-2.5 md:h-4 md:w-4 text-highlights rounded"
+                defaultChecked={selectedCountries.includes(country)}
+              />
+              <span className="font-inter text-xs md:text-sm">{country}</span>
+            </label>
+          ))}
+        </div>
+
         <div className={isMobile ? "overflow-x-auto" : ""}>
           <div style={{ minWidth: isMobile ? '600px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={525}>
@@ -118,7 +147,9 @@ const DestinationCharts = () => {
                 <Legend wrapperStyle={{ zIndex: 1 }} />
 
                 {countries.map((country, i) => (
-                  <Line key={country} type="monotone" dataKey={country} stroke={colors[i % colors.length]} name={country} />
+                  selectedCountries.includes(country) && (
+                    <Line key={country} type="monotone" dataKey={country} stroke={colors[i % colors.length]} name={country} />
+                  )
                 ))}
               </LineChart>
             </ResponsiveContainer>

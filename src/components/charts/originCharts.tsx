@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -14,10 +15,23 @@ import {
 import OriginChoropleth from './originChoropleth'
 import { useParseOriginData } from '../../hooks/useParseOriginData'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { COLUMN_ORDERS } from '../../utils/columnOrders'
 
 const OriginCharts = () => {
   const { chartData, barChartData, regions, loading, error } = useParseOriginData()
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([])
   const isMobile = useIsMobile()
+
+  useEffect(() => {
+    if (regions.length > 0) setSelectedRegions(regions)
+  }, [regions])
+
+  // Region Checkbox handler
+  const handleRegionChange = (region: string) => {
+    setSelectedRegions(prev =>
+      prev.includes(region) ? prev.filter(r => r !== region) : [...prev, region]
+    )
+  }
 
   // Show loading message
   if (loading) return (
@@ -121,6 +135,21 @@ const OriginCharts = () => {
           Emigration Trends By Region of Origin (1988 - 2020)
         </h2>
 
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
+          {COLUMN_ORDERS.region.map(region => (
+            <label key={region} className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedRegions.includes(region)}
+                onChange={() => handleRegionChange(region)}
+                className="form-checkbox h-2.5 w-2.5 md:h-4 md:w-4 text-highlights rounded"
+                defaultChecked={selectedRegions.includes(region)}
+              />
+              <span className="font-inter text-xs md:text-sm">{getRegionShorthand(region)}</span>
+            </label>
+          ))}
+        </div>
+
         <div className={isMobile ? 'overflow-x-auto' : ''}>
           <div style={{ width: isMobile ? '1400px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={600}>
@@ -157,13 +186,15 @@ const OriginCharts = () => {
                 />
 
                 {regions.map((region, i) => (
-                  <Line 
-                    key={region} 
-                    type="monotone" 
-                    dataKey={region} 
-                    stroke={colors[i % colors.length]} 
-                    name={(region)}
-                  />
+                  selectedRegions.includes(region) && (
+                    <Line 
+                      key={region} 
+                      type="monotone" 
+                      dataKey={region} 
+                      stroke={colors[i % colors.length]} 
+                      name={(region)}
+                    />
+                  )
                 ))}
               </LineChart>
             </ResponsiveContainer>

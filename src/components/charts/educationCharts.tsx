@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -12,10 +13,23 @@ import {
 } from 'recharts'
 import { useParseEducationData } from '../../hooks/useParseEducationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { COLUMN_ORDERS } from '../../utils/columnOrders'
 
 const EducationCharts = () => {
   const { chartData, groupedChartData, educationLevels, loading, error } = useParseEducationData()
+  const [selectedEducationLevels, setSelectedEducationLevels] = useState<string[]>([])
   const isMobile = useIsMobile()
+
+  useEffect(() => {
+    if (educationLevels.length > 0) setSelectedEducationLevels(educationLevels)
+  }, [educationLevels])
+
+  // Education Level Checkbox handler
+  const handleEducationLevelChange = (educationLevel: string) => {
+    setSelectedEducationLevels(prev =>
+      prev.includes(educationLevel) ? prev.filter(el => el !== educationLevel) : [...prev, educationLevel]
+    )
+  }
 
   // Show loading message
   if (loading) return (
@@ -54,6 +68,21 @@ const EducationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Education Level (1988 - 2020)</h2>
 
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
+          {COLUMN_ORDERS.education.map(educationLevel => (
+            <label key={educationLevel} className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedEducationLevels.includes(educationLevel)}
+                onChange={() => handleEducationLevelChange(educationLevel)}
+                className="form-checkbox h-2.5 w-2.5 md:h-4 md:w-4 text-highlights rounded"
+                defaultChecked={selectedEducationLevels.includes(educationLevel)}
+              />
+              <span className="font-inter text-xs md:text-sm">{educationLevel}</span>
+            </label>
+          ))}
+        </div>
+
         <div className={isMobile ? 'overflow-x-auto' : ''}>
           <div style={{ width: isMobile ? '600px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={525}>
@@ -83,7 +112,9 @@ const EducationCharts = () => {
                 <Legend wrapperStyle={{ zIndex: 1 }} />
 
                 {educationLevels.map((educationLevel, i) => (
-                  <Line key={educationLevel} type="monotone" dataKey={educationLevel} stroke={colors[i % colors.length]} name={educationLevel} />
+                  selectedEducationLevels.includes(educationLevel) && (
+                    <Line key={educationLevel} type="monotone" dataKey={educationLevel} stroke={colors[i % colors.length]} name={educationLevel} />
+                  )
                 ))}
               </LineChart>
             </ResponsiveContainer>
