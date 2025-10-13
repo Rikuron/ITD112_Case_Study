@@ -4,6 +4,12 @@ A sophisticated, full-stack web application for managing, analyzing, and visuali
 
 ![React](https://img.shields.io/badge/React-19.0.0-blue) ![Firebase](https://img.shields.io/badge/Firebase-12.3.0-orange) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue) ![Tailwind](https://img.shields.io/badge/TailwindCSS-4.0.6-teal) ![TanStack](https://img.shields.io/badge/TanStack_Router-1.130.2-purple)
 
+## 🌐 Live Demo
+
+**🔗 [View Live Application](https://itd-112-case-study.vercel.app)**
+
+Experience the full application with interactive data visualizations, real-time charts, and comprehensive emigrant data management.
+
 ## ✨ Features
 
 ### 📊 **Comprehensive Data Management**
