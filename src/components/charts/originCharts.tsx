@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   LineChart,
   Line,
@@ -20,11 +20,53 @@ import { COLUMN_ORDERS } from '../../utils/columnOrders'
 const OriginCharts = () => {
   const { chartData, barChartData, regions, loading, error } = useParseOriginData()
   const [selectedRegions, setSelectedRegions] = useState<string[]>([])
+  const [selectedYear, setSelectedYear] = useState<string>('All Years')
   const isMobile = useIsMobile()
 
   useEffect(() => {
     if (regions.length > 0) setSelectedRegions(regions)
   }, [regions])
+
+  const years = useMemo(() => ['All Years', ...chartData.map(d => d.YEAR)], [chartData])
+
+  // Function to extract region shorthand
+  const getRegionShorthand = (fullRegion: string): string => {
+    // Handle regions with acronyms in parentheses
+    const acronymMatch = fullRegion.match(/\(([A-Z]+)\)/)
+    if (acronymMatch) {
+      return acronymMatch[1]
+    }
+    
+    // Handle "Region X - Description" format
+    const regionMatch = fullRegion.match(/^Region\s+(I+|[IVX]+|[A-Z]+)\s*(-|–)/)
+    if (regionMatch) {
+      return `Region ${regionMatch[1]}`
+    }
+
+    // Handle special cases for Region IV A and IV B
+    if (fullRegion.includes('Region IV A')) {
+      return 'Region IV-A'
+    }
+    if (fullRegion.includes('Region IV B')) {
+      return 'Region IV-B'
+    }    
+    
+    // Return as is if no pattern matches
+    return fullRegion
+  }
+
+  const singleYearData = useMemo(() => {
+    if (selectedYear === 'All Years') return []
+
+    const yearData = chartData.find(d => String(d.YEAR) === String(selectedYear))
+    if (!yearData) return []
+
+    return COLUMN_ORDERS.region.map(region => ({
+      region,
+      shorthand: getRegionShorthand(region),
+      total: yearData[region] || 0
+    }))
+  }, [selectedYear, chartData, regions])
 
   // Region Checkbox handler
   const handleRegionChange = (region: string) => {
@@ -54,32 +96,6 @@ const OriginCharts = () => {
     '#FFBB28', '#FF8042', '#A4DE6C', '#D0ED57', '#FFC0CB', '#B22222',
     '#4682B4', '#DDA0DD', '#20b2aa', '#ff4500', '#32cd32'
   ]
-
-  // Function to extract region shorthand
-  const getRegionShorthand = (fullRegion: string): string => {
-    // Handle regions with acronyms in parentheses
-    const acronymMatch = fullRegion.match(/\(([A-Z]+)\)/)
-    if (acronymMatch) {
-      return acronymMatch[1]
-    }
-    
-    // Handle "Region X - Description" format
-    const regionMatch = fullRegion.match(/^Region\s+(I+|[IVX]+|[A-Z]+)\s*(-|–)/)
-    if (regionMatch) {
-      return `Region ${regionMatch[1]}`
-    }
-
-    // Handle special cases for Region IV A and IV B
-    if (fullRegion.includes('Region IV A')) {
-      return 'Region IV-A'
-    }
-    if (fullRegion.includes('Region IV B')) {
-      return 'Region IV-B'
-    }    
-    
-    // Return as is if no pattern matches
-    return fullRegion
-  }
 
   // Transform barChartData to include shorthand
   const barChartDataWithShorthand = barChartData.map(item => ({
@@ -205,47 +221,101 @@ const OriginCharts = () => {
       {/* Bar Chart - All Regions */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
-          Total Emigrants by Region (1988 - 2020)
+          {selectedYear === 'All Years'
+            ? 'Total Emigrants by Region (1988 - 2020)'
+            : `Total Emigrants by Region in ${selectedYear}`}
         </h2>
+
+        <div className="mb-4 text-center">
+          <label htmlFor="year-filter" className="text-white mr-2 font-inter">Filter by Year:</label>
+          <select
+            id="year-filter"
+            value={selectedYear}
+            onChange={e => setSelectedYear(e.target.value)}
+            className="bg-primary border border-highlights text-white rounded p-2 font-inter"
+          >
+            {years.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
         
         <div className={isMobile ? 'overflow-x-auto' : ''}>
           <div style={{ width: isMobile ? '1000px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={600}>
-              <BarChart 
-                data={barChartDataWithShorthand} 
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
-                <XAxis 
-                  type="number" 
-                  tickFormatter={(value) => {
-                    if (value === 0) return '0'
-                    if (value >= 1000000) {
-                      return `${(value / 1000000).toFixed(1)}m`
-                    } else if (value >= 1000) {
-                      return `${(value / 1000).toFixed(0)}k`
-                    }
-                    return value.toString()
-                  }}
-                  domain={[0, 700000]}
-                  tickCount={15}
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="shorthand" 
-                  style={{ fontSize: '14px' }}
-                  width={90}
-                />
-                <Tooltip 
-                  content={(props) => CustomBarTooltip(props, colors)} 
-                  wrapperStyle={{ zIndex: 10 }} 
-                />
-                <Bar dataKey="total" name="Total Emigrants">
-                  {barChartDataWithShorthand.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
+              {selectedYear === 'All Years' ? (
+                <BarChart 
+                  data={barChartDataWithShorthand} 
+                  layout="vertical"
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
+                  <XAxis 
+                    type="number" 
+                    tickFormatter={(value) => {
+                      if (value === 0) return '0'
+                      if (value >= 1000000) {
+                        return `${(value / 1000000).toFixed(1)}m`
+                      } else if (value >= 1000) {
+                        return `${(value / 1000).toFixed(0)}k`
+                      }
+                      return value.toString()
+                    }}
+                    domain={[0, 700000]}
+                    tickCount={15}
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="shorthand" 
+                    style={{ fontSize: '14px' }}
+                    width={90}
+                  />
+                  <Tooltip 
+                    content={(props) => CustomBarTooltip(props, colors)} 
+                    wrapperStyle={{ zIndex: 10 }} 
+                  />
+                  <Bar dataKey="total" name="Total Emigrants">
+                    {barChartDataWithShorthand.map((_entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              ) : (
+                <BarChart 
+                  data={singleYearData}
+                  layout="vertical"
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke='#4a5568' />
+                  <XAxis 
+                    type="number" 
+                    tickFormatter={(value) => {
+                      if (value === 0) return '0'
+                      if (value >= 1000000) {
+                        return `${(value / 1000000).toFixed(1)}m`
+                      } else if (value >= 1000) {
+                        return `${(value / 1000).toFixed(0)}k`
+                      }
+                      return value.toString()
+                    }}
+                    domain={[0, 30000]}
+                    tickCount={15}
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="shorthand" 
+                    style={{ fontSize: '14px' }}
+                    width={90}
+                  />
+                  <Tooltip 
+                    content={(props) => CustomBarTooltip(props, colors)} 
+                    wrapperStyle={{ zIndex: 10 }} 
+                  />
+                  <Bar dataKey="total" name="Total Emigrants">
+                    {singleYearData.map((_entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              )}
             </ResponsiveContainer>
           </div>
         </div>

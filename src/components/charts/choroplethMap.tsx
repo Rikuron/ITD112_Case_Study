@@ -1,210 +1,16 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { ResponsiveChoropleth } from '@nivo/geo'
 import { useParseAllDestinationData } from '../../hooks/useParseAllDestinationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
-
-// Country name mapping from CSV to GeoJSON ISO codes
-const countryMapping: Record<string, string> = {
-  "PHILIPPINES": "PHL",
-  "AFGHANISTAN": "AFG",
-  "ALBANIA": "ALB",
-  "ALGERIA": "DZA",
-  "ANGOLA": "AGO",
-  "ANTARCTICA": "ATA",
-  "ARGENTINA": "ARG",
-  "ARMENIA": "ARM",
-  "AUSTRALIA": "AUS",
-  "AUSTRIA": "AUT",
-  "AZERBAIJAN": "AZE",
-  "BAHAMAS": "BHS",
-  "BANGLADESH": "BGD",
-  "BELARUS": "BLR",
-  "BELGIUM": "BEL",
-  "BELIZE": "BLZ",
-  "BENIN": "BEN",
-  "BHUTAN": "BTN",
-  "BOLIVIA": "BOL",
-  "BOSNIA AND HERZEGOVINA": "BIH",
-  "BOTSWANA": "BWA",
-  "BRAZIL": "BRA",
-  "BRUNEI DARUSSALAM": "BRN",
-  "BULGARIA": "BGR",
-  "BURKINA": "BFA",
-  "BURUNDI": "BDI",
-  "CAMBODIA": "KHM",
-  "CAMEROON": "CMR",
-  "CANADA": "CAN",
-  "CENTRAL AFRICAN REPUBLIC": "CAF",
-  "CHAD": "TCD",
-  "CHILE": "CHL",
-  "CHINA (P.R.O.C.)": "CHN",
-  "COLOMBIA": "COL",
-  "COSTA RICA": "CRI",
-  "COTE D' IVOIRE (IVORY COAST)": "CIV",
-  "CROATIA": "HRV",
-  "CUBA": "CUB",
-  "CYPRUS": "CYP",
-  "CZECH REPUBLIC": "CZE",
-  "DEMOCRATIC REPUBLIC OF THE CONGO (ZAIRE)": "COD",
-  "DENMARK": "DNK",
-  "DJIBOUTI": "DJI",
-  "DOMINICAN REPUBLIC": "DOM",
-  "ECUADOR": "ECU",
-  "EGYPT": "EGY",
-  "EL SALVADOR": "SLV",
-  "EQUATORIAL GUINEA": "GNQ",
-  "ERITREA": "ERI",
-  "ESTONIA": "EST",
-  "ETHIOPIA": "ETH",
-  "FALKLAND ISLANDS (MALVINAS)": "FLK",
-  "FIJI": "FJI",
-  "FINLAND": "FIN",
-  "FRANCE": "FRA",
-  "FRENCH SOUTHERN AND ANTARCTIC LANDS": "ATF",
-  "GABON": "GAB",
-  "GAMBIA": "GMB",
-  "GERMANY": "DEU",
-  "GEORGIA": "GEO",
-  "GHANA": "GHA",
-  "GREECE": "GRC",
-  "GREENLAND": "GRL",
-  "GUATEMALA": "GTM",
-  "GUINEA": "GIN",
-  "GUINEA BISSAU": "GNB",
-  "GUYANA": "GUY",
-  "HAITI": "HTI",
-  "HONDURAS": "HND",
-  "HUNGARY": "HUN",
-  "ICELAND": "ISL",
-  "INDIA": "IND",
-  "INDONESIA": "IDN",
-  "IRAN": "IRN",
-  "IRAQ": "IRQ",
-  "IRELAND": "IRL",
-  "ISRAEL": "ISR",
-  "ITALY": "ITA",
-  "JAMAICA": "JAM",
-  "JAPAN": "JPN",
-  "JORDAN": "JOR",
-  "KAZAKHSTAN": "KAZ",
-  "KENYA": "KEN",
-  "KOSOVO": "OSA",
-  "KUWAIT": "KWT",
-  "KYRGYZSTAN": "KGZ",
-  "LAOS": "LAO",
-  "LATVIA": "LVA",
-  "LEBANON": "LBN",
-  "LESOTHO": "LSO",
-  "LIBERIA": "LBR",
-  "LIBYA": "LBY",
-  "LITHUANIA": "LTU",
-  "LUXEMBOURG": "LUX",
-  "MACEDONIA": "MKD",
-  "MADAGASCAR": "MDG",
-  "MALAWI": "MWI",
-  "MALAYSIA": "MYS",
-  "MALI": "MLI",
-  "MAURITANIA": "MRT",
-  "MEXICO": "MEX",
-  "MOLDOVA": "MDA",
-  "MONGOLIA": "MNG",
-  "MONTENEGRO": "MNE",
-  "MOROCCO": "MAR",
-  "MOZAMBIQUE": "MOZ",
-  "MYANMAR (BURMA)": "MMR",
-  "NAMIBIA": "NAM",
-  "NEPAL": "NPL",
-  "NETHERLANDS": "NLD",
-  "NEW CALEDONIA": "NCL",
-  "NEW ZEALAND": "NZL",
-  "NICARAGUA": "NIC",
-  "NIGER": "NER",
-  "NIGERIA": "NGA",
-  "NORTHERN CYPRUS": "-99",
-  "NORTH KOREA": "PRK",
-  "NORWAY": "NOR",
-  "OMAN": "OMN",
-  "PAKISTAN": "PAK",
-  "PANAMA": "PAN",
-  "PAPUA NEW GUINEA": "PNG",
-  "PARAGUAY": "PRY",
-  "PERU": "PER",
-  "POLAND": "POL",
-  "PORTUGAL": "PRT",
-  "PUERTO RICO": "PRI",
-  "QATAR": "QAT",
-  "REPUBLIC OF THE CONGO": "COG",
-  "REPUBLIC OF SERBIA": "SRB",
-  "ROMANIA": "ROU",
-  "RUSSIAN FEDERATION / USSR": "RUS",
-  "RWANDA": "RWA",
-  "SAUDI ARABIA": "SAU",
-  "SENEGAL": "SEN",
-  "SIERRA LEONE": "SLE",
-  "SLOVAK REPUBLIC": "SVK",
-  "SLOVENIA": "SVN",
-  "SOLOMON ISLANDS": "SLB",
-  "SOMALIA": "SOM",
-  "SOMALILAND": "ABV",
-  "SOUTH AFRICA": "ZAF",
-  "SOUTH KOREA": "KOR",
-  "SOUTH SUDAN": "SDS",
-  "SPAIN": "ESP",
-  "SRI LANKA": "LKA",
-  "SUDAN": "SDN",
-  "SURINAME": "SUR",
-  "SWEDEN": "SWE",
-  "SWAZILAND": "SWZ",
-  "SWITZERLAND": "CHE",
-  "SYRIA": "SYR",
-  "TAIWAN (ROC)": "TWN",
-  "TAJIKISTAN": "TJK",
-  "THAILAND": "THA",
-  "TOGO": "TGO",
-  "TRINIDAD AND TOBAGO": "TTO",
-  "TUNISIA": "TUN",
-  "TURKEY": "TUR",
-  "TURKMENISTAN": "TKM",
-  "UGANDA": "UGA",
-  "UKRAINE": "UKR",
-  "UNITED ARAB EMIRATES": "ARE",
-  "UNITED KINGDOM": "GBR",
-  "UNITED REPUBLIC OF TANZANIA": "TZA",
-  "UNITED STATES OF AMERICA": "USA",
-  "URUGUAY": "URY",
-  "UZBEKISTAN": "UZB",
-  "VANUATU": "VUT",
-  "VENEZUELA": "VEN",
-  "VIETNAM": "VNM",
-  "WEST BANK": "PSE",
-  "WESTERN SAHARA": "ESH",
-  "YEMEN": "YEM",
-  "ZAMBIA": "ZMB",
-  "ZIMBABWE": "ZWE"
-}
+import { useGeoJSON } from '../../hooks/useGeoJSON'
+import { useYearFilter } from '../../hooks/useYearFilter'
+import { toIso3 } from '../../utils/countryMapping'
 
 const ChoroplethMap = () => {
-  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all')
+  const { selectedYear, onSelectChange } = useYearFilter('all')
   const { mapData, loading, years } = useParseAllDestinationData(selectedYear)
-  const [geoData, setGeoData] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
   const isMobile = useIsMobile()
-  
-  useEffect(() => {
-    fetch('/data/worldCountries.json')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load map data')
-        return res.json()
-      })
-      .then(data => {
-        console.log('GeoJSON loaded:', data)
-        setGeoData(data)
-      })
-      .catch(err => {
-        console.error('Error loading GeoJSON:', err)
-        setError(err.message)
-      })
-  }, [])
+  const { data: geoData, loading: geoLoading, error: geoError } = useGeoJSON('/data/worldCountries.json')
 
   // Transform data for Nivo Choropleth format
   const nivoData = useMemo(() => {
@@ -216,26 +22,21 @@ const ChoroplethMap = () => {
       else if (item.total >= 10000) categoryValue = 1
       
       return {
-        id: countryMapping[item.country] || item.country,
+        id: toIso3(item.country) || item.country,
         value: categoryValue,
         total: item.total
       }
     })
   }, [mapData])
 
-  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const year = event.target.value
-    setSelectedYear(year === 'all' ? 'all' : parseInt(year))
-  }
-
-  if (error) return (
+  if (geoError) return (
     <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
       <p className="font-bold">⚠️ Error Loading Data</p>
-      <p>{error}</p>
+      <p>{geoError}</p>
     </div>
   )
 
-  if (loading || !geoData) return <div className="text-white p-6">Loading map...</div>
+  if (loading || geoLoading || !geoData) return <div className="text-white p-6">Loading map...</div>
 
   return (
     <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
@@ -246,11 +47,11 @@ const ChoroplethMap = () => {
         }
       </h2>
 
-      {/* Add Year Filter Dropdown */}
+      {/* Year Filter Dropdown */}
       <div className="mb-4 flex justify-center">
         <select
           value={selectedYear}
-          onChange={handleYearChange}
+          onChange={onSelectChange}
           className="px-4 py-2 bg-secondary border border-highlights rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-highlights"
         >
           <option value="all">All Years (1981-2020)</option>

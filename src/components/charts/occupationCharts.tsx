@@ -13,32 +13,12 @@ import { useParseOccupationData } from '../../hooks/useParseOccupationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import TreemapNivo from './treemapNivo'
 import { COLUMN_ORDERS } from '../../utils/columnOrders'
-
-const occupationLabelMap: Record<string, string> = {
-  "Prof'l": "Prof'l, Tech'l, & Related Workers",
-  "Managerial": "Managerial, Executive, and Administrative Workers",
-  "Clerical": "Clerical Workers",
-  "Sales": "Sales Workers",
-  "Service": "Service Workers",
-  "Agriculture": "Agriculture, Animal Husbandry, Forestry Workers & Fishermen",
-  "Production": "Production Process, Transport Equipment Operators, & Laborers",
-  "Armed Forces": "Members of the Armed Forces",
-  "Housewives": "Housewives",
-  "Retirees": "Retirees",
-  "Students": "Students",
-  "Minors": "Minors (Below 7 years old)",
-  "Out of School Youth": "Out of School Youth",
-  "No Occupation Reported": "No Occupation Reported"
-}
-
-// Tooltip Formatter to display new occupation labels
-const customTooltipFormatter = (value: any, name: string) => {
-  const fullName = occupationLabelMap[name] || name
-  return [value.toLocaleString(), fullName]
-} 
+import { OCCUPATION_LABELS, formatOccupationTooltip } from '../../utils/occupationLabels'
 
 const OccupationCharts = () => {
-  const { chartData, occupations, treemapData, loading, error } = useParseOccupationData()
+  const { chartData, occupations, loading, error } = useParseOccupationData()
+  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all')
+  const { treemapData, years } = useParseOccupationData(selectedYear)
   const [selectedOccupations, setSelectedOccupations] = useState<string[]>([])
   const isMobile = useIsMobile()
 
@@ -46,11 +26,17 @@ const OccupationCharts = () => {
     if (occupations.length > 0) setSelectedOccupations(occupations)
   }, [occupations])
 
-  // Occupation Checkbox handler
+  // Occupation Checkbox handler for Line Chart
   const handleOccupationChange = (occupation: string) => {
     setSelectedOccupations(prev =>
       prev.includes(occupation) ? prev.filter(o => o !== occupation) : [...prev, occupation]
     )
+  }
+
+  // Year Change handler for Treemap
+  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = event.target.value
+    setSelectedYear(year === 'all' ? 'all' : parseInt(year))
   }
 
   // Show loading message
@@ -121,7 +107,7 @@ const OccupationCharts = () => {
                     fontWeight: 'bold',
                     marginBottom: '8px'
                   }}
-                  formatter={customTooltipFormatter}
+                  formatter={formatOccupationTooltip}
                 />
                 <Legend wrapperStyle={{ zIndex: 1 }} />
 
@@ -140,14 +126,34 @@ const OccupationCharts = () => {
 
       {/* Treemap Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Total Emigration Composition By Occupation Category (1981 - 2020)</h2>
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
+          {selectedYear === 'all'
+            ? 'Total Emigration Composition By Occupation Category (1981 - 2020)'
+            : `Total Emigration Composition By Occupation Category in ${selectedYear}`}
+        </h2>
         
+        {/* Year Filter Dropdown */}
+        <div className="mb-4 text-center">
+          <label htmlFor="year-filter" className="text-white mr-2 font-inter">Filter by Year:</label>
+          <select
+            id="year-filter"
+            value={selectedYear}
+            onChange={handleYearChange}
+            className="bg-primary border border-highlights text-white rounded p-2 font-inter"
+          >
+            <option value="all">All Years (1981-2020)</option>
+            {years.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
+
         <div className={isMobile ? 'overflow-x-auto' : ''}>
           <div style={{ width: isMobile ? '600px' : 'auto' }}>
             <TreemapNivo 
-              key={`treemap-${treemapData.length}`}
+              key={`treemap-${treemapData.length}-${selectedYear}`}
               data={treemapData} 
-              occupationLabelMap={occupationLabelMap} 
+              occupationLabelMap={OCCUPATION_LABELS} 
             />
           </div>
         </div>

@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { ResponsiveChoropleth } from '@nivo/geo'
 import { useParseOriginProvinceData } from '../../hooks/useParseOriginProvinceData'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { useGeoJSON } from '../../hooks/useGeoJSON'
+import { useYearFilter } from '../../hooks/useYearFilter'
 
 const normalizeName = (s: string) =>
   (s || '')
@@ -11,39 +13,29 @@ const normalizeName = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
-const provinceGeoPath = '/data/Provinces.json'
-
 const PHOriginChoropleth = () => {
-  const { totals, min, max, loading, error: dataError } = useParseOriginProvinceData()
-  const [features, setFeatures] = useState<any[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const { selectedYear, onSelectChange } = useYearFilter('all')
+  const { totals, years, min, max, loading, error: dataError } = useParseOriginProvinceData(selectedYear)
   const isMobile = useIsMobile()
   
-  useEffect(() => {
-    fetch(provinceGeoPath)
-    .then((r) => {
-      if (!r.ok) throw new Error('Failed to load map data')
-      return r.json()
-    })
-    .then((fc) => {
-      const feats = (fc?.features || [])
-      .filter((feat: any) =>
-        (feat?.properties?.ENGTYPE_1 || '').toUpperCase() === 'PROVINCE' &&
-        feat?.properties?.PROVINCE
-      )
-      .map((feat: any) => ({
-        ...feat,
-        id: normalizeName(feat.properties.PROVINCE)
-      }))
+  const transform = useCallback((fc: any) => (
+    (fc?.features || []).filter((feat: any) =>
+      (feat?.properties?.ENGTYPE_1 || '').toUpperCase() === 'PROVINCE' &&
+      feat?.properties?.PROVINCE
+    ).map((feat: any) => ({
+      ...feat,
+      id: normalizeName(feat.properties.PROVINCE)
+    }))
+  ), [])
 
-      setFeatures(feats)
-    })
-    .catch((e) => setError(e.message))
-  }, [])
+  const { data: features, loading: geoLoading, error: geoError } = useGeoJSON<any[]>(
+    '/data/Provinces.json',
+    transform    
+  )
 
-  if (error) return <div className="text-red-500 p-6">Error: {error}</div>
+  if (geoError) return <div className="text-red-500 p-6">Error: {geoError}</div>
   if (dataError) return <div className="text-red-500 p-6">Error: {dataError}</div>
-  if (loading || !features) return <div className="text-white p-6">Loading map...</div>
+  if (loading || geoLoading || !features) return <div className="text-white p-6">Loading map...</div>
 
   const data = Object.entries(totals).map(([name, total]) => ({
     id: name,
@@ -54,8 +46,25 @@ const PHOriginChoropleth = () => {
   return (
     <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
       <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
-        Emigrant Origin Density by Province (1988 - 2020)
+        {selectedYear === 'all' 
+          ? 'Emigrant Origin Density by Province (1988 - 2020)' 
+          : `Emigrant Origin Density by Province in ${selectedYear}`
+        }
       </h2>
+
+      {/* Year Filter Dropdown */}
+      <div className="mb-4 flex justify-center">
+        <select
+          value={selectedYear}
+          onChange={onSelectChange}
+          className="px-4 py-2 bg-secondary border border-highlights rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-highlights"
+        >
+          <option value="all">All Years (1988-2020)</option>
+          {years.map(year => (
+            <option key={year} value={year}>{year}</option>
+          ))}
+        </select>
+      </div>
 
       <div className={isMobile ? 'overflow-x-auto' : ''}>
         <div style={{ width: isMobile ? '600px' : '100%', height: '600px' }}>
