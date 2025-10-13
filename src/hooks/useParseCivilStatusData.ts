@@ -3,6 +3,7 @@ import { getAllCivilStatusData } from '../api/civilStatusService'
 
 interface TransformedCivilStatusData {
   YEAR: number
+  [key: string]: number
   Single: number
   Married: number
   Widower: number

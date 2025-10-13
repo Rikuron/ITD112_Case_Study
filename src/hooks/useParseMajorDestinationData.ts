@@ -3,6 +3,7 @@ import { getAllMajorDestinationData } from '../api/destinationService'
 
 interface TransformedMajorDestinationData {
   YEAR: number
+  [key: string]: number
   USA: number
   CANADA: number
   JAPAN: number

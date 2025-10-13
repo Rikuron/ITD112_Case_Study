@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getAllOccupationData } from '../api/occupationService'
 
 interface TransformedOccupationData {
@@ -14,14 +14,16 @@ interface TreemapData {
 interface UseParseOccupationDataReturn {
   chartData: TransformedOccupationData[]
   occupations: string[]
+  years: number[]
   treemapData: TreemapData[]
   loading: boolean
   error: string | null
 }
 
-export const useParseOccupationData = (): UseParseOccupationDataReturn => {
+export const useParseOccupationData = (year: number | 'all' = 'all'): UseParseOccupationDataReturn => {
   const [chartData, setChartData] = useState<TransformedOccupationData[]>([])
   const [occupations, setOccupations] = useState<string[]>([])
+  const [allRows, setAllRows] = useState<TransformedOccupationData[]>([])
   const [treemapData, setTreemapData] = useState<TreemapData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -30,6 +32,48 @@ export const useParseOccupationData = (): UseParseOccupationDataReturn => {
   useEffect(() => {
     fetchFromFirebase()
   }, [])
+
+  useEffect(() => {
+    if (allRows.length === 0) return
+
+    const rows = year === 'all' ? allRows : allRows.filter((r: any) => r.Year === year)
+
+    if (rows.length === 0) {
+      setChartData([])
+      setTreemapData([])
+      return
+    }
+
+    // Extract occupations from first data entry
+    const firstEntry = rows[0]
+    const allOccupations = Object.keys(firstEntry).filter(key => key !== 'Year')
+    setOccupations(allOccupations)
+
+    // Calculate totals for treemap
+    const totals: { [key: string]: number } = {}
+    allOccupations.forEach(occupation => {
+      totals[occupation] = 0
+    })
+
+    rows.forEach(yearData => {
+      allOccupations.forEach(occupation => {
+        totals[occupation] += yearData[occupation] || 0
+      })
+    })
+
+    const treemap = allOccupations.map(occupation => ({
+      name: occupation,
+      value: totals[occupation]
+    }))
+
+    setChartData(rows)
+    setTreemapData(treemap)
+    setLoading(false)
+  }, [year, allRows])
+
+  const years = useMemo(() => {
+    return Array.from(new Set(allRows.map(r => r.Year))).sort((a, b) => b - a)
+  }, [allRows])
 
   const fetchFromFirebase = async () => {
     try {
@@ -40,35 +84,12 @@ export const useParseOccupationData = (): UseParseOccupationDataReturn => {
       const data = await getAllOccupationData()
 
       if (data.length === 0) {
-        console.warn('No occupation data found in Firebase. Please upload data first.')
+        setError('No occupation data found in Firebase. Please upload data first.')
         setLoading(false)
         return
       }
 
-      // Extract occupations from first data entry
-      const firstEntry = data[0]
-      const allOccupations = Object.keys(firstEntry).filter(key => key !== 'Year')
-      setOccupations(allOccupations)
-
-      // Calculate totals for treemap
-      const totals: { [key: string]: number } = {}
-      allOccupations.forEach(occupation => {
-        totals[occupation] = 0
-      })
-
-      data.forEach(yearData => {
-        allOccupations.forEach(occupation => {
-          totals[occupation] += yearData[occupation] || 0
-        })
-      })
-
-      const treemap = allOccupations.map(occupation => ({
-        name: occupation,
-        value: totals[occupation]
-      }))
-
-      setChartData(data)
-      setTreemapData(treemap)
+      setAllRows(data)
       setLoading(false)
       console.log('Successfully loaded data from Firebase')
     } catch (err) {
@@ -81,6 +102,7 @@ export const useParseOccupationData = (): UseParseOccupationDataReturn => {
   return {
     chartData,
     occupations,
+    years,
     treemapData,
     loading,
     error

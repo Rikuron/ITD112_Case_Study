@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -13,10 +14,31 @@ import {
 import { ResponsiveBar } from '@nivo/bar'
 import { useParseSexData } from '../../hooks/useParseSexData'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { COLUMN_ORDERS } from '../../utils/columnOrders'
 
 const SexCharts = () => {
   const { chartData, populationPyramidData, scatterPlotData, trendlineData, sexCategories, loading, error } = useParseSexData()
+  const [selectedLineSexCategories, setSelectedLineSexCategories] = useState<string[]>([])
+  const [selectedScatterSexCategories, setSelectedScatterSexCategories] = useState<string[]>([])
   const isMobile = useIsMobile()
+
+  useEffect(() => {
+    if (sexCategories.length > 0) setSelectedLineSexCategories(sexCategories)
+    if (sexCategories.length > 0) setSelectedScatterSexCategories(sexCategories)
+  }, [sexCategories])
+
+  // Sex Category Checkbox handler
+  const handleLineSexCategoryChange = (sexCategory: string) => {
+    setSelectedLineSexCategories(prev =>
+      prev.includes(sexCategory) ? prev.filter(sc => sc !== sexCategory) : [...prev, sexCategory]
+    )
+  }
+
+  const handleScatterSexCategoryChange = (sexCategory: string) => {
+    setSelectedScatterSexCategories(prev =>
+      prev.includes(sexCategory) ? prev.filter(sc => sc !== sexCategory) : [...prev, sexCategory]
+    )
+  }
 
   // Show loading message
   if (loading) return (
@@ -43,6 +65,21 @@ const SexCharts = () => {
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Sex (1981 - 2020)</h2>
+
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
+          {COLUMN_ORDERS.sex.map(sexCategory => (
+            <label key={sexCategory} className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedLineSexCategories.includes(sexCategory)}
+                onChange={() => handleLineSexCategoryChange(sexCategory)}
+                className="form-checkbox h-2.5 w-2.5 md:h-4 md:w-4 text-highlights rounded"
+                defaultChecked={selectedLineSexCategories.includes(sexCategory)}
+              />
+              <span className="font-inter text-xs md:text-sm">{sexCategory}</span>
+            </label>
+          ))}
+        </div>
 
         <div className={isMobile ? 'overflow-x-auto' : ''}>
           <div style={{ width: isMobile ? '1400px' : 'auto' }}>
@@ -73,14 +110,9 @@ const SexCharts = () => {
                 <Legend wrapperStyle={{ zIndex: 1 }} />
 
                 {sexCategories.map((sexCategory, i) => (
-                  <Line 
-                    key={sexCategory} 
-                    type="monotone" 
-                    dataKey={sexCategory} 
-                    stroke={colors[i % colors.length]} 
-                    name={sexCategory} 
-                    strokeWidth={2} 
-                  />
+                  selectedLineSexCategories.includes(sexCategory) && (
+                    <Line key={sexCategory} type="monotone" dataKey={sexCategory} stroke={colors[i % colors.length]} name={sexCategory} strokeWidth={2} />
+                  )
                 ))}
               </LineChart>
             </ResponsiveContainer>
@@ -248,6 +280,21 @@ const SexCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Male vs Female Emigration Scatter Plot (1981 - 2020)</h2>
         
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
+          {COLUMN_ORDERS.sex.map(sexCategory => (
+            <label key={sexCategory} className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedScatterSexCategories.includes(sexCategory)}
+                onChange={() => handleScatterSexCategoryChange(sexCategory)}
+                className="form-checkbox h-2.5 w-2.5 md:h-4 md:w-4 text-highlights rounded"
+                defaultChecked={selectedScatterSexCategories.includes(sexCategory)}
+              />
+              <span className="font-inter text-xs md:text-sm">{sexCategory}</span>
+            </label>
+          ))}
+        </div>
+
         <div className={isMobile ? 'overflow-x-auto' : ''} style={{ height: '500px' }}>
           <div style={{ width: isMobile ? '1250px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={500}>
@@ -282,12 +329,16 @@ const SexCharts = () => {
                             <div className="text-[#3661E2] font-bold mb-2">
                               Year: {year}
                             </div>
-                            <div className={`text-[${colors[1]}]`}>
-                              Female: {yearData.FEMALE?.toLocaleString()}
-                            </div>
-                            <div className={`text-[${colors[0]}]`}>
-                              Male: {yearData.MALE?.toLocaleString()}
-                            </div>
+                            {selectedScatterSexCategories.includes('MALE') && (
+                              <div className="text-[#8884d8]">
+                                Male: {yearData.MALE?.toLocaleString()}
+                              </div>
+                            )}
+                            {selectedScatterSexCategories.includes('FEMALE') && (
+                              <div className="text-[#ff8042]">
+                                Female: {yearData.FEMALE?.toLocaleString()}
+                              </div>
+                            )}
                           </div>
                         )
                       }
@@ -295,45 +346,49 @@ const SexCharts = () => {
                     return null
                   }}
                 />
+                
                 <Legend />
-                
-                {/* Male Data Points */}
-                <Scatter 
-                  name="MALE" 
-                  data={scatterPlotData.male}
-                  fill={colors[0]}
-                />
-                
-                {/* Female Data Points */}
-                <Scatter 
-                  name="FEMALE" 
-                  data={scatterPlotData.female}
-                  fill={colors[1]}
-                  />
 
-                  {/* Male Trendline */}
-                  <Line 
-                    type="linear"
-                    dataKey="y"
-                    data={trendlineData.maleTrend}
-                    stroke={colors[0]}
-                    strokeWidth={3}
-                    strokeDasharray="5 5"
-                    dot={false}
-                    name="Male Trend"
-                  />
-      
-                  {/* Female Trendline */}
-                  <Line 
-                    type="linear"
-                    dataKey="y"
-                    data={trendlineData.femaleTrend}
-                    stroke={colors[1]}
-                    strokeWidth={3}
-                    strokeDasharray="5 5"
-                    dot={false}
-                    name="Female Trend"
-                  />
+                {selectedScatterSexCategories.includes('MALE') && (
+                  <>
+                    <Scatter 
+                      name="MALE" 
+                      data={scatterPlotData.male}
+                      fill={colors[0]}
+                    />
+                    <Line 
+                      type="linear"
+                      dataKey="y"
+                      data={trendlineData.maleTrend}
+                      stroke={colors[0]}
+                      strokeWidth={3}
+                      strokeDasharray="5 5"
+                      dot={false}
+                      name="Male Trend"
+                    />
+                  </>
+                )}
+
+                {selectedScatterSexCategories.includes('FEMALE') && (
+                  <>
+                    <Scatter 
+                      name="FEMALE" 
+                      data={scatterPlotData.female}
+                      fill={colors[1]}
+                    />
+                    <Line 
+                      type="linear"
+                      dataKey="y"
+                      data={trendlineData.femaleTrend}
+                      stroke={colors[1]}
+                      strokeWidth={3}
+                      strokeDasharray="5 5"
+                      dot={false}
+                      name="Female Trend"
+                    />
+                  </>
+                )}
+
               </ScatterChart>
             </ResponsiveContainer>
           </div>
