@@ -3,6 +3,7 @@ import {
   getDataByYear,
   getAllData,
   updateDataByYear,
+  deleteDataByYear,
   getAvailableYears,
   getCategories
 } from './baseService'
@@ -32,6 +33,10 @@ export const getAllRegionData = async (): Promise<RegionData[]> => {
 
 export const updateRegionData = async (year: number, updates: Record<string, number>) => {
   await updateDataByYear(REGION_COLLECTION, year, updates as Record<string, number>)
+}
+
+export const deleteRegionData = async (year: number) => {
+  await deleteDataByYear(REGION_COLLECTION, year)
 }
 
 export const getAvailableRegionYears = async (): Promise<number[]> => {
@@ -77,6 +82,10 @@ export const getAllProvinceData = async (): Promise<ProvinceData[]> => {
 
 export const updateProvinceData = async (year: number, updates: Record<string, number>) => {
   await updateDataByYear(PROVINCE_COLLECTION, year, updates as Record<string, number>)
+}
+
+export const deleteProvinceData = async (year: number) => {
+  await deleteDataByYear(PROVINCE_COLLECTION, year)
 }
 
 export const getAvailableProvinceYears = async (): Promise<number[]> => {

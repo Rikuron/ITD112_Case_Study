@@ -3,6 +3,7 @@ import {
   getDataByYear,
   getAllData,
   updateDataByYear,
+  deleteDataByYear,
   getAvailableYears,
   getCategories
 } from './baseService'
@@ -46,6 +47,11 @@ export const getAllEducationData = async (): Promise<EducationData[]> => {
 // PUT 
 export const updateEducationData = async (year: number, updates: Partial<Omit<EducationData, 'Year'>>) => {
   await updateDataByYear(EDUCATION_COLLECTION, year, updates as Record<string, number>)
+}
+
+// DELETE
+export const deleteEducationData = async (year: number) => {
+  await deleteDataByYear(EDUCATION_COLLECTION, year)
 }
 
 // GET all available years

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useRef } from 'react'
+import { useAuth } from '../context/authContext'
 import { uploadAgeCSVToFirebase } from '../utils/uploadAgeData'
 import { uploadEducationCSVToFirebase } from '../utils/uploadEducationData'
 import { uploadOccupationCSVToFirebase } from '../utils/uploadOccupationData'
@@ -17,6 +18,7 @@ export const Route = createFileRoute('/uploadData')({
 type DataType = 'age' | 'education' | 'occupation' | 'sex' | 'civilStatus' | 'majorDestination' | 'allDestination' | 'region' | 'province'
 
 function UploadData() {
+  const { userProfile, hasPermission } = useAuth()
   const [uploading, setUploading] = useState<DataType | null>(null)
   const [messages, setMessages] = useState<Record<DataType, { type: 'success' | 'error' | 'info'; text: string } | null>>({
     age: null,
@@ -115,6 +117,27 @@ function UploadData() {
     }
   }
 
+  // Access control check
+  if (!userProfile || !hasPermission('upload_data')) {
+    return (
+      <div className="container mx-auto p-8">
+        <div className="max-w-2xl mx-auto bg-red-500/20 border border-red-500 rounded-lg p-8 text-center">
+          <h1 className="text-3xl font-bold text-white mb-4">Access Denied</h1>
+          <p className="text-red-300 mb-6">
+            You don't have permission to upload data. This page requires editor or admin access.
+          </p>
+          <p className="text-gray-400 text-sm">
+            {!userProfile 
+              ? 'Please sign in to access this page.' 
+              : `Your role: ${userProfile.role.toUpperCase()}`
+            }
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // UI
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-4xl font-bold text-white mb-2 text-center">Upload Data to Firebase</h1>
@@ -140,9 +163,9 @@ function UploadData() {
               onChange={e => handleFileSelect('age', e)}
               disabled={uploading !== null}
               className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
-                       file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
-                       file:text-xs file:font-semibold file:bg-highlights file:text-white 
-                       hover:file:opacity-90 disabled:opacity-50"
+                        file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                        file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                        hover:file:opacity-90 disabled:opacity-50"
             />
             {selectedFiles.age && (
               <p className="mt-2 text-xs text-gray-300">
@@ -167,8 +190,8 @@ function UploadData() {
             onClick={() => handleUpload('age')}
             disabled={uploading !== null || !selectedFiles.age}
             className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
-                     hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-opacity"
+                      hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+                      transition-opacity"
           >
             {uploading === 'age' ? '⏳ Uploading...' : '🚀 Upload'}
           </button>
@@ -184,7 +207,7 @@ function UploadData() {
             }`}>
               <p className="font-semibold mb-1">
                 {messages.age.type === 'success' ? '✅ Success!' : 
-                 messages.age.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+                  messages.age.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
               </p>
               <p>{messages.age.text}</p>
             </div>
@@ -208,9 +231,9 @@ function UploadData() {
               onChange={e => handleFileSelect('civilStatus', e)}
               disabled={uploading !== null}
               className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
-                       file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
-                       file:text-xs file:font-semibold file:bg-highlights file:text-white 
-                       hover:file:opacity-90 disabled:opacity-50"
+                        file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                        file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                        hover:file:opacity-90 disabled:opacity-50"
             />
             {selectedFiles.civilStatus && (
               <p className="mt-2 text-xs text-gray-300">
@@ -235,8 +258,8 @@ function UploadData() {
             onClick={() => handleUpload('civilStatus')}
             disabled={uploading !== null || !selectedFiles.civilStatus}
             className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
-                     hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-opacity"
+                      hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+                      transition-opacity"
           >
             {uploading === 'civilStatus' ? '⏳ Uploading...' : '🚀 Upload'}
           </button>
@@ -252,7 +275,7 @@ function UploadData() {
             }`}>
               <p className="font-semibold mb-1">
                 {messages.civilStatus.type === 'success' ? '✅ Success!' : 
-                 messages.civilStatus.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+                  messages.civilStatus.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
               </p>
               <p>{messages.civilStatus.text}</p>
             </div>
@@ -397,9 +420,9 @@ function UploadData() {
               onChange={e => handleFileSelect('education', e)}
               disabled={uploading !== null}
               className="w-full p-2 bg-secondary text-white rounded border border-highlights text-sm
-                       file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
-                       file:text-xs file:font-semibold file:bg-highlights file:text-white 
-                       hover:file:opacity-90 disabled:opacity-50"
+                        file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 
+                        file:text-xs file:font-semibold file:bg-highlights file:text-white 
+                        hover:file:opacity-90 disabled:opacity-50"
             />
             {selectedFiles.education && (
               <p className="mt-2 text-xs text-gray-300">
@@ -424,8 +447,8 @@ function UploadData() {
             onClick={() => handleUpload('education')}
             disabled={uploading !== null || !selectedFiles.education}
             className="w-full bg-highlights text-white py-2.5 rounded-lg font-semibold text-sm
-                     hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-opacity"
+                      hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+                      transition-opacity"
           >
             {uploading === 'education' ? '⏳ Uploading...' : '🚀 Upload'}
           </button>
@@ -441,7 +464,7 @@ function UploadData() {
             }`}>
               <p className="font-semibold mb-1">
                 {messages.education.type === 'success' ? '✅ Success!' : 
-                 messages.education.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
+                  messages.education.type === 'error' ? '❌ Error' : 'ℹ️ Info'}
               </p>
               <p>{messages.education.text}</p>
             </div>
