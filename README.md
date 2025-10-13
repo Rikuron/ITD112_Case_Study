@@ -1,53 +1,90 @@
-# Filipino Emigrants Database CRUD Application
+# Filipino Emigrants Database - Comprehensive Data Visualization Platform
 
-A modern, responsive web application for managing and visualizing Filipino emigrant data by marital status and year. Built with React, Firebase, and beautiful UI components.
+A sophisticated, full-stack web application for managing, analyzing, and visualizing Filipino emigrant data across multiple demographic dimensions. Built with modern React technologies, Firebase, and advanced data visualization libraries.
 
-![Filipino Emigrants App](https://img.shields.io/badge/React-19.0.0-blue) ![Firebase](https://img.shields.io/badge/Firebase-12.3.0-orange) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue) ![Tailwind](https://img.shields.io/badge/TailwindCSS-4.0.6-teal)
+![React](https://img.shields.io/badge/React-19.0.0-blue) ![Firebase](https://img.shields.io/badge/Firebase-12.3.0-orange) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue) ![Tailwind](https://img.shields.io/badge/TailwindCSS-4.0.6-teal) ![TanStack](https://img.shields.io/badge/TanStack_Router-1.130.2-purple)
 
 ## ✨ Features
 
-- **📊 Data Management**: Full CRUD operations (Create, Read, Update, Delete) for emigrant records
-- **📈 Data Visualization**: Interactive bar charts showing emigrant statistics by category
-- **🎨 Modern UI**: Beautiful, responsive design with Tailwind CSS
-- **📱 Mobile Friendly**: Fully responsive design that works on all devices
-- **🔒 Secure**: Environment variables for API keys and configuration
-- **⚡ Fast**: Built with Vite for lightning-fast development and builds
+### 📊 **Comprehensive Data Management**
+- **Multi-dimensional Data**: Age, Civil Status, Education, Occupation, Sex, Origin (Region/Province), Destination (Major/All Countries)
+- **Full CRUD Operations**: Create, Read, Update, Delete for all data types
+- **CSV Data Import**: Bulk upload functionality with data validation
+- **Role-based Access Control**: Secure authentication with permission-based features
+
+### 📈 **Advanced Data Visualization**
+- **Interactive Charts**: Line charts, bar charts, stacked bar charts, scatter plots
+- **Geographic Visualizations**: Choropleth maps for origin and destination analysis
+- **Population Pyramids**: Sex distribution visualization
+- **Tree Maps**: Hierarchical data representation using Nivo
+- **Responsive Design**: Optimized for desktop and mobile viewing
+
+### 🎨 **Modern User Experience**
+- **Beautiful UI**: Clean, modern design with Tailwind CSS
+- **Responsive Layout**: Works seamlessly on all device sizes
+- **Loading States**: Smooth user feedback during data operations
+- **Error Handling**: Comprehensive error management and user notifications
+
+### 🔒 **Security & Authentication**
+- **Firebase Authentication**: Secure user login and registration
+- **Permission System**: Role-based access control for data management
+- **Environment Variables**: Secure API key management
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19 + TypeScript
-- **Routing**: TanStack Router
-- **Database**: Firebase Firestore
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Build Tool**: Vite
-- **Testing**: Vitest + Testing Library
+### **Frontend**
+- **React 19** with TypeScript
+- **TanStack Router** for client-side routing
+- **TanStack DevTools** for development experience
+- **Tailwind CSS 4.0** for styling
+- **React Icons** for iconography
 
-## 📋 Data Structure
+### **Data Visualization**
+- **Recharts** for standard charts (line, bar, scatter)
+- **Nivo** for advanced visualizations (treemap, choropleth maps)
+- **Custom Tooltips** and interactive components
 
-The application manages emigrant data with the following fields:
-- **Year**: The emigration year
-- **Single**: Number of single emigrants
-- **Married**: Number of married emigrants
-- **Widower**: Number of widowed emigrants
-- **Separated**: Number of separated emigrants
-- **Divorced**: Number of divorced emigrants
-- **Not Reported**: Number of emigrants with unreported marital status
+### **Backend & Database**
+- **Firebase Firestore** for real-time database
+- **Firebase Authentication** for user management
+- **React Firebase Hooks** for seamless integration
+
+### **Development Tools**
+- **Vite** for fast development and building
+- **TypeScript** for type safety
+- **Vitest** for testing
+- **Papa Parse** for CSV processing
+
+## 📋 Data Categories
+
+The application manages emigrant data across multiple dimensions:
+
+### **Demographics**
+- **Age Groups**: 14 age brackets from "14 - Below" to "70 - Above"
+- **Sex**: Male/Female distribution
+- **Civil Status**: Single, Married, Widower, Separated, Divorced, Not Reported
+- **Education**: 8 levels from Elementary to Post Graduate
+
+### **Geographic**
+- **Origin**: 17 Philippine regions and provinces
+- **Destination**: Major destinations (USA, Canada, Australia, etc.) and all countries
+
+### **Socioeconomic**
+- **Occupation**: 14 categories from Professional to No Occupation Reported
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 - Node.js (v18 or higher)
 - npm or yarn
-- Firebase project with Firestore enabled
+- Firebase project with Firestore and Authentication enabled
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd lab1/frontend
+   cd lab1/frontend_
    ```
 
 2. **Install dependencies**
@@ -57,12 +94,7 @@ The application manages emigrant data with the following fields:
 
 3. **Set up environment variables**
    
-   Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Update `.env` with your Firebase configuration:
+   Create a `.env` file in the root directory:
    ```env
    VITE_FIREBASE_API_KEY=your_api_key_here
    VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain_here
@@ -82,9 +114,15 @@ The application manages emigrant data with the following fields:
 
 ## 🔥 Firebase Setup
 
-1. Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Enable Firestore Database
-3. Set up Firestore security rules (for development):
+1. **Create Firebase Project**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project
+
+2. **Enable Services**
+   - **Firestore Database**: Enable in test mode for development
+   - **Authentication**: Enable Email/Password authentication
+
+3. **Configure Security Rules** (for development):
    ```javascript
    rules_version = '2';
    service cloud.firestore {
@@ -95,65 +133,112 @@ The application manages emigrant data with the following fields:
      }
    }
    ```
-4. Get your Firebase config from Project Settings
-5. Update your `.env` file with the configuration values
+
+4. **Get Configuration**
+   - Go to Project Settings → General → Your apps
+   - Copy the Firebase config values to your `.env` file
 
 ## 📦 Available Scripts
 
-- **`npm run dev`** - Start development server
+- **`npm run dev`** - Start development server with hot reload
 - **`npm run build`** - Build for production
-- **`npm run serve`** - Preview production build
-- **`npm run test`** - Run tests
+- **`npm run serve`** - Preview production build locally
+- **`npm run test`** - Run test suite
 
 ## 📁 Project Structure
-
-frontend/
-├── public/ # Static assets
-├── src/
-│ ├── routes/ # TanStack Router pages
-│ │ ├── root.tsx # Root layout
-│ │ └── index.tsx # Main CRUD page
-│ ├── services/ # API services
-│ │ └── emigrantsService.ts
-│ ├── firebase.ts # Firebase configuration
-│ ├── main.tsx # Application entry point
-│ └── styles.css # Global styles
-├── .env.example # Environment variables template
-├── .gitignore # Git ignore rules
-├── package.json # Dependencies and scripts
-└── README.md # Project documentation
+frontend_/ <br />
+├── public/ <br />
+│   ├── data/                    # Static data files (Provinces.json worldCountries.json) <br />
+│   └── fonts/                   # Custom fonts <br />
+├── src/ <br />
+│   ├── api/                     # API service layer <br />
+│   │   ├── ageService.ts  <br />
+│   │   ├── civilStatusService.ts   <br />
+│   │   ├── destinationService.ts   <br />
+│   │   └── ...   <br />
+│   ├── components/  <br />
+│   │   ├── charts/              # Chart components   <br />
+│   │   │   ├── ageCharts.tsx <br />
+│   │   │   ├── choroplethMap.tsx   <br />
+│   │   │   └── ...  <br />
+│   │   ├── header.tsx  <br />
+│   │   ├── navBar.tsx  <br />
+│   │   └── loadingScreen.tsx <br />
+│   ├── context/                 # React contexts  <br />
+│   │   ├── authContext.tsx   <br />
+│   │   └── navBarContext.tsx <br />
+│   ├── hooks/                   # Custom React hooks <br />
+│   │   ├── useParseAgeData.ts   <br />
+│   │   ├── useGeoJSON.ts  <br />
+│   │   └── ...   <br />
+│   ├── routes/                  # TanStack Router pages <br />
+│   │   ├── __root.tsx  <br />
+│   │   ├── index.tsx           # Main dashboard   <br />
+│   │   ├── login.tsx   <br />
+│   │   ├── register.tsx   <br />
+│   │   ├── manageData.tsx      # Data management interface <br />
+│   │   └── uploadData.tsx      # CSV upload interface   <br />
+│   ├── utils/                   # Utility functions  <br />
+│   │   ├── uploadAgeData.ts  <br />
+│   │   ├── columnOrders.ts   <br />
+│   │   └── ...   <br />
+│   ├── firebase.ts             # Firebase configuration <br />
+│   └── main.tsx                # Application entry point   <br />
+├── .env                        # Environment variables (not in git) <br />
+├── package.json  <br />
+├── tsconfig.json <br />
+└── vite.config.ts   <br />
 
 ## 🔧 Usage
 
-### Adding Records
-1. Fill in the year and emigrant counts by marital status
-2. Click "Add Record" to save to the database
+**Dashboard View**
+- Navigate through different data categories using the sidebar
+- View interactive charts and visualizations
+- Filter data by year and other parameters
 
-### Viewing Data
-- **Table View**: See all records in a responsive table
-- **Chart View**: Visualize total emigrants by category in an interactive bar chart
+### **Data Management**
+1. **Login** with appropriate permissions
+2. **Upload CSV files** for bulk data import
+3. **Manage records** with inline editing capabilities
+4. **Delete records** with confirmation prompts
 
-### Managing Records
-- **Update**: Click "Update" to modify a record's year
-- **Delete**: Click "Delete" to remove a record
+### **Data Upload**
+1. **Prepare CSV files** following the required format
+2. **Upload files** through the dedicated upload interface
+3. **Validate data** before importing to Firebase
+4. **Monitor progress** with real-time feedback
 
 ## 🌐 Deployment
 
-### Build for Production
-```bash
-npm run build
-```
+### **Deploy to Vercel (Recommended)**
 
-### Deploy to Vercel (Recommended)
-1. Install Vercel CLI: `npm i -g vercel`
-2. Run: `vercel`
-3. Follow the prompts
-4. Set environment variables in Vercel dashboard
+1. **Install Vercel CLI**
+   ```bash
+   npm i -g vercel
+   ```
 
-### Deploy to Netlify
-1. Build the project: `npm run build`
-2. Deploy the `dist` folder to Netlify
-3. Set environment variables in Netlify dashboard
+2. **Deploy**
+   ```bash
+   cd frontend_
+   vercel
+   ```
+
+3. **Configure Environment Variables**
+   - Go to Vercel Dashboard → Project → Settings → Environment Variables
+   - Add all Firebase configuration variables
+   - Redeploy to apply changes
+
+### **Alternative Deployment Options**
+- **Netlify**: Build and deploy the `dist` folder
+- **Firebase Hosting**: Use Firebase CLI for deployment
+- **GitHub Pages**: For static hosting
+
+## 🔒 Security Considerations
+
+- **Environment Variables**: Never commit `.env` files to version control
+- **Firebase Rules**: Implement proper security rules for production
+- **Authentication**: Use role-based access control for sensitive operations
+- **Data Validation**: All uploaded data is validated before storage
 
 ## 🤝 Contributing
 
@@ -167,23 +252,20 @@ npm run build
 
 This project is created for educational purposes as part of ITD112 coursework.
 
-## 🆘 Support
+## 🆘 Support & Troubleshooting
 
-If you encounter any issues:
-1. Check that all environment variables are set correctly
-2. Ensure Firebase project is properly configured
-3. Verify internet connection for Firebase access
-4. Check browser console for any error messages
+### **Common Issues**
+1. **Firebase Connection**: Verify environment variables are set correctly
+2. **Authentication**: Ensure Firebase Auth is properly configured
+3. **Build Errors**: Check TypeScript compilation and dependencies
+4. **Chart Rendering**: Verify data format and GeoJSON files
 
-## 🏗️ Future Enhancements
-
-- [ ] User authentication
-- [ ] Data export functionality
-- [ ] Advanced filtering and search
-- [ ] More chart types and visualizations
-- [ ] Bulk data import
-- [ ] Print/PDF export features
+### **Getting Help**
+- Check browser console for error messages
+- Verify Firebase project configuration
+- Ensure all dependencies are installed correctly
 
 ---
 
-**Made with ❤️ for ITD112 Lab Assignment**
+**Made with ❤️ for ITD112 Lab Assignment - Comprehensive Filipino Emigrants Database Platform**
+**hehe sir pol flat one pls**
