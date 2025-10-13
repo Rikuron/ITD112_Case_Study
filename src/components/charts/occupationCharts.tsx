@@ -9,6 +9,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import LoadingScreen from '../loadingScreen'
 import { useParseOccupationData } from '../../hooks/useParseOccupationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import TreemapNivo from './treemapNivo'
@@ -40,11 +41,7 @@ const OccupationCharts = () => {
   }
 
   // Show loading message
-  if (loading) return (
-    <div className="text-white text-center p-8">
-      <div className="animate-pulse">Loading Occupation data from Firebase...</div>
-    </div>
-  )
+  if (loading) return ( <LoadingScreen /> )
 
   if (error) {
     return (

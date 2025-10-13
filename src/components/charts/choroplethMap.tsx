@@ -5,6 +5,7 @@ import { useIsMobile } from '../../hooks/useIsMobile'
 import { useGeoJSON } from '../../hooks/useGeoJSON'
 import { useYearFilter } from '../../hooks/useYearFilter'
 import { toIso3 } from '../../utils/countryMapping'
+import LoadingScreen from '../loadingScreen'
 
 const ChoroplethMap = () => {
   const { selectedYear, onSelectChange } = useYearFilter('all')
@@ -36,7 +37,7 @@ const ChoroplethMap = () => {
     </div>
   )
 
-  if (loading || geoLoading || !geoData) return <div className="text-white p-6">Loading map...</div>
+  if (loading || geoLoading || !geoData) return <LoadingScreen />
 
   return (
     <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">

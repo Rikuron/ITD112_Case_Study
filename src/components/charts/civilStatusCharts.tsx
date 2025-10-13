@@ -12,6 +12,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import LoadingScreen from '../loadingScreen'
 import { useParseCivilStatusData } from '../../hooks/useParseCivilStatusData'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { COLUMN_ORDERS } from '../../utils/columnOrders'
@@ -49,11 +50,7 @@ const CivilStatusCharts = () => {
   }
 
   // Show loading message
-  if (loading) return (
-    <div className="text-white text-center p-8">
-      <div className="animate-pulse">Loading Civil Status data from Firebase...</div>
-    </div>
-  )
+  if (loading) return ( <LoadingScreen /> )
 
   if (error) {
     return (
