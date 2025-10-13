@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ResponsiveChoropleth } from '@nivo/geo'
 import { useParseAllDestinationData } from '../../hooks/useParseAllDestinationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -184,7 +184,8 @@ const countryMapping: Record<string, string> = {
 }
 
 const ChoroplethMap = () => {
-  const { mapData, loading } = useParseAllDestinationData()
+  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all')
+  const { mapData, loading, years } = useParseAllDestinationData(selectedYear)
   const [geoData, setGeoData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const isMobile = useIsMobile()
@@ -205,34 +206,59 @@ const ChoroplethMap = () => {
       })
   }, [])
 
+  // Transform data for Nivo Choropleth format
+  const nivoData = useMemo(() => {
+    return mapData.map(item => {
+      let categoryValue = 0
+      if (item.total >= 1000000) categoryValue = 4
+      else if (item.total >= 500000) categoryValue = 3
+      else if (item.total >= 100000) categoryValue = 2
+      else if (item.total >= 10000) categoryValue = 1
+      
+      return {
+        id: countryMapping[item.country] || item.country,
+        value: categoryValue,
+        total: item.total
+      }
+    })
+  }, [mapData])
+
+  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = event.target.value
+    setSelectedYear(year === 'all' ? 'all' : parseInt(year))
+  }
+
   if (error) return (
     <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
       <p className="font-bold">⚠️ Error Loading Data</p>
       <p>{error}</p>
     </div>
   )
-  if (loading || !geoData) return <div className="text-white p-6">Loading map...</div>
 
-  // Transform data for Nivo Choropleth format
-  const nivoData = mapData.map(item => {
-    let categoryValue = 0
-    if (item.total >= 1000000) categoryValue = 4
-    else if (item.total >= 500000) categoryValue = 3
-    else if (item.total >= 100000) categoryValue = 2
-    else if (item.total >= 10000) categoryValue = 1
-    
-    return {
-      id: countryMapping[item.country] || item.country,
-      value: categoryValue,
-      total: item.total
-    }
-  })
+  if (loading || !geoData) return <div className="text-white p-6">Loading map...</div>
 
   return (
     <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
       <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
-        Emigrant Destination of Filipinos by Country (1981 - 2020)
+        {selectedYear === 'all' 
+          ? 'Emigrant Destination of Filipinos by Country (1981 - 2020)' 
+          : `Emigrant Destination of Filipinos by Country in ${selectedYear}`
+        }
       </h2>
+
+      {/* Add Year Filter Dropdown */}
+      <div className="mb-4 flex justify-center">
+        <select
+          value={selectedYear}
+          onChange={handleYearChange}
+          className="px-4 py-2 bg-secondary border border-highlights rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-highlights"
+        >
+          <option value="all">All Years (1981-2020)</option>
+          {years.map(year => (
+            <option key={year} value={year}>{year}</option>
+          ))}
+        </select>
+      </div>
 
       <div className={isMobile ? 'overflow-x-auto' : ''}>
         <div style={{ width: isMobile ? '900px' : '100%', height: '650px' }}>
