@@ -17,6 +17,7 @@ import ChoroplethMap from './choroplethMap'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { COLUMN_ORDERS } from '../../utils/columnOrders'
 import { CustomTooltip } from '../customTooltip'
+import LoadingScreen from '../loadingScreen'
 
 const DestinationCharts = () => {
   const { chartData, barChartData, countries, loading, error } = useParseMajorDestinationData()
@@ -49,11 +50,7 @@ const DestinationCharts = () => {
     )
   }
   
-  if (loading) return (
-    <div className="text-white text-center p-8">
-      <div className="animate-pulse">Loading destination data from Firebase...</div>
-    </div>
-  )
+  if (loading) return ( <LoadingScreen /> )
 
   if (error) {
     return (

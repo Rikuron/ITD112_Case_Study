@@ -4,6 +4,7 @@ import { useParseOriginProvinceData } from '../../hooks/useParseOriginProvinceDa
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { useGeoJSON } from '../../hooks/useGeoJSON'
 import { useYearFilter } from '../../hooks/useYearFilter'
+import LoadingScreen from '../loadingScreen'
 
 const normalizeName = (s: string) =>
   (s || '')
@@ -35,7 +36,7 @@ const PHOriginChoropleth = () => {
 
   if (geoError) return <div className="text-red-500 p-6">Error: {geoError}</div>
   if (dataError) return <div className="text-red-500 p-6">Error: {dataError}</div>
-  if (loading || geoLoading || !features) return <div className="text-white p-6">Loading map...</div>
+  if (loading || geoLoading || !features) return <LoadingScreen />
 
   const data = Object.entries(totals).map(([name, total]) => ({
     id: name,

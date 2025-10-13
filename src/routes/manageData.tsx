@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/authContext'
+import LoadingScreen from '../components/loadingScreen'
 import { COLUMN_ORDERS } from '../utils/columnOrders'
 import { getAllAgeData, updateAgeData, deleteAgeData } from '../api/ageService'
 import { getAllCivilStatusData, updateCivilStatusData, deleteCivilStatusData } from '../api/civilStatusService'
@@ -266,11 +267,7 @@ function ManageData() {
       )}
 
       {/* Loading State */}
-      {loading && (
-        <div className="text-center text-white py-8">
-          <p>Loading...</p>
-        </div>
-      )}
+      {loading && ( <LoadingScreen /> )}
 
       {/* Data Table */}
       {!loading && data.length > 0 && (

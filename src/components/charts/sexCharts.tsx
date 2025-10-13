@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import LoadingScreen from '../loadingScreen'
 import { ResponsiveBar } from '@nivo/bar'
 import { useParseSexData } from '../../hooks/useParseSexData'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -41,11 +42,7 @@ const SexCharts = () => {
   }
 
   // Show loading message
-  if (loading) return (
-    <div className="text-white text-center p-8">
-      <div className="animate-pulse">Loading Age data from Firebase...</div>
-    </div>
-  )
+  if (loading) return ( <LoadingScreen /> )
 
   if (error) {
     return (
