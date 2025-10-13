@@ -1,7 +1,5 @@
 import { useRef } from 'react'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanstackDevtools } from '@tanstack/react-devtools'
 import Header from '../components/header'
 import NavBar from '../components/navBar'
 import { NavBarProvider } from '../context/navBarContext'
@@ -46,18 +44,6 @@ export const Route = createRootRoute({
       <AuthProvider>
         <NavBarProvider>
           <RootLayout />
-          
-          <TanstackDevtools
-            config={{
-              position: 'bottom-left',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
         </NavBarProvider>
       </AuthProvider>
     )
