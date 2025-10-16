@@ -13,6 +13,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 import OriginChoropleth from './originChoropleth'
 import { useParseOriginData } from '../../hooks/useParseOriginData'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -85,6 +86,13 @@ const OriginCharts = () => {
         <p className="font-bold">⚠️ Error Loading Data</p>
         <p>{error}</p>
       </div>
+    )
+  }
+
+  // Check if no data is available
+  if (chartData.length === 0 || regions.length === 0) {
+    return (
+      <EmptyState />
     )
   }
 

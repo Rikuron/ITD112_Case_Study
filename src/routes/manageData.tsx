@@ -3,18 +3,18 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/authContext'
 import LoadingScreen from '../components/loadingScreen'
 import { COLUMN_ORDERS } from '../utils/columnOrders'
-import { getAllAgeData, updateAgeData, deleteAgeData } from '../api/ageService'
-import { getAllCivilStatusData, updateCivilStatusData, deleteCivilStatusData } from '../api/civilStatusService'
+import { getAllAgeData, updateAgeData, deleteAgeData, deleteAllAgeData } from '../api/ageService'
+import { getAllCivilStatusData, updateCivilStatusData, deleteCivilStatusData, deleteAllCivilStatusData } from '../api/civilStatusService'
 import { 
-  getAllMajorDestinationData, updateMajorDestinationData, deleteMajorDestinationData, 
-  getAllAllDestinationData, updateAllDestinationData, deleteAllDestinationData
+  getAllMajorDestinationData, updateMajorDestinationData, deleteMajorDestinationData, deleteAllMajorDestinationData, 
+  getAllAllDestinationData, updateAllDestinationData, deleteAllDestinationData, deleteAllAllDestinationData
 } from '../api/destinationService'
-import { getAllEducationData, updateEducationData, deleteEducationData } from '../api/educationService'
-import { getAllOccupationData, updateOccupationData, deleteOccupationData } from '../api/occupationService'
-import { getAllSexData, updateSexData, deleteSexData } from '../api/sexService'
+import { getAllEducationData, updateEducationData, deleteEducationData, deleteAllEducationData } from '../api/educationService'
+import { getAllOccupationData, updateOccupationData, deleteOccupationData, deleteAllOccupationData } from '../api/occupationService'
+import { getAllSexData, updateSexData, deleteSexData, deleteAllSexData } from '../api/sexService'
 import { 
-  getAllRegionData, updateRegionData, deleteRegionData, 
-  getAllProvinceData, updateProvinceData, deleteProvinceData
+  getAllRegionData, updateRegionData, deleteRegionData, deleteAllProvinceData, 
+  getAllProvinceData, updateProvinceData, deleteProvinceData, deleteAllRegionData
 } from '../api/originService'
 
 export const Route = createFileRoute('/manageData') ({
@@ -210,11 +210,58 @@ function ManageData() {
     }
   }
 
+  // Delete all data
+  const handleDeleteAll = async () => {
+    if (!confirm(`Final confirmation: Delete all ${data.length} records for ${selectedDataType}`)) return
+
+    setLoading(true)
+    try {
+      switch (selectedDataType) {
+        case 'age':
+          await deleteAllAgeData()
+          break
+        case 'civilStatus':
+          await deleteAllCivilStatusData()
+          break
+        case 'majorDestination':
+          await deleteAllMajorDestinationData()
+          break
+        case 'allDestination':
+          await deleteAllAllDestinationData()
+          break
+        case 'education':
+          await deleteAllEducationData()
+          break
+        case 'occupation':
+          await deleteAllOccupationData()
+          break
+        case 'sex':
+          await deleteAllSexData()
+          break
+        case 'region':
+          await deleteAllRegionData()
+          break
+        case 'province':
+          await deleteAllProvinceData()
+          break
+        default:
+          break
+      }
+
+      setMessage({ type: 'success', text: `Successfully deleted all ${data.length} records for ${selectedDataType}!` })
+      await loadData()
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || 'Failed to delete all data' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+
   // Handle field changes in the edit form
   const handleFieldChange = (field: string, value: string) => {
     setEditFormData((prev: any) => ({ ...prev, [field]: parseFloat(value) || 0 }))
   }
-
 
   // Check for edit/update/'write' permission
   if (!userProfile || !canEdit) {
@@ -235,25 +282,40 @@ function ManageData() {
     <div className="container mx-auto p-6">
       <h1 className="text-4xl font-bold text-white mb-6">Manage Data</h1>
 
-      {/* Data Type Selector */}
-      <div className="mb-6">
-        <label className="block text-white font-semibold mb-2">Select Data Type:</label>
-        <select
-          value={selectedDataType ?? ''}
-          onChange={(e) => setSelectedDataType(e.target.value as DataType)}
-          className="px-4 py-2 bg-secondary text-white border border-highlights rounded-lg"
-        >
-          <option value="age">Age Data</option>
-          <option value="sex">Sex Data</option>
-          <option value="civilStatus">Civil Status Data</option>
-          <option value="education">Education Data</option>
-          <option value="occupation">Occupation Data</option>
-          <option value="majorDestination">Major Destination Data</option>
-          <option value="allDestination">All Destination Data</option>
-          <option value="region">Region Data</option>
-          <option value="province">Province Data</option>
-        </select>
-      </div>
+      <div className="flex justify-between items-end">
+        {/* Data Type Selector */}
+        <div className="mb-6">
+          <label className="block text-white font-semibold mb-2">Select Data Type:</label>
+          <select
+            value={selectedDataType ?? ''}
+            onChange={(e) => setSelectedDataType(e.target.value as DataType)}
+            className="w-[75%] text-sm md:text-base px-4 py-2 bg-secondary text-white border border-highlights rounded-lg"
+          >
+            <option value="age">Age Data</option>
+            <option value="sex">Sex Data</option>
+            <option value="civilStatus">Civil Status Data</option>
+            <option value="education">Education Data</option>
+            <option value="occupation">Occupation Data</option>
+            <option value="majorDestination">Major Destination Data</option>
+            <option value="allDestination">All Destination Data</option>
+            <option value="region">Region Data</option>
+            <option value="province">Province Data</option>
+          </select>
+        </div>
+
+        {/* Delete All Button (Admin Only) */}
+        {canDelete && data.length > 0 && (
+          <div className="mb-6 flex justify-end w-[50%]">
+            <button
+              onClick={handleDeleteAll}
+              disabled={loading}
+              className="text-xs md:text-base px-1.5 py-2 md:px-6 md:py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50 font-semibold border-2 border-red-500 transition-colors cursor-pointer"
+            >
+              🗑️ Delete All {selectedDataType.replace(/([A-Z])/g, ' $1').trim()} Data
+            </button>
+          </div>
+        )}
+      </div>      
 
       {/* Message Display */}
       {message && (

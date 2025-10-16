@@ -6,6 +6,7 @@ import { useGeoJSON } from '../../hooks/useGeoJSON'
 import { useYearFilter } from '../../hooks/useYearFilter'
 import { toIso3 } from '../../utils/countryMapping'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 
 const ChoroplethMap = () => {
   const { selectedYear, onSelectChange } = useYearFilter('all')
@@ -38,6 +39,13 @@ const ChoroplethMap = () => {
   )
 
   if (loading || geoLoading || !geoData) return <LoadingScreen />
+
+  // Check if no data is available
+  if (mapData.length === 0) {
+    return (
+      <EmptyState />
+    )
+  }
 
   return (
     <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">

@@ -14,6 +14,7 @@ import {
 } from 'recharts'
 import { useParseAgeData } from '../../hooks/useParseAgeData'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { COLUMN_ORDERS } from '../../utils/columnOrders'
 import { CustomTooltip } from '../customTooltip'
@@ -58,6 +59,13 @@ const AgeCharts = () => {
         <p className="font-bold">⚠️ Error Loading Data</p>
         <p>{error}</p>
       </div>
+    )
+  }
+
+  // Check if no data is available
+  if (chartData.length === 0 || ageGroups.length === 0) {
+    return (
+      <EmptyState />
     )
   }
 

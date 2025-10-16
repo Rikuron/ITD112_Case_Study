@@ -18,6 +18,7 @@ import { useIsMobile } from '../../hooks/useIsMobile'
 import { COLUMN_ORDERS } from '../../utils/columnOrders'
 import { CustomTooltip } from '../customTooltip'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 
 const DestinationCharts = () => {
   const { chartData, barChartData, countries, loading, error } = useParseMajorDestinationData()
@@ -58,6 +59,13 @@ const DestinationCharts = () => {
         <p className="font-bold">⚠️ Error Loading Data</p>
         <p>{error}</p>
       </div>
+    )
+  }
+
+  // Check if no data is available
+  if (chartData.length === 0 || countries.length === 0) {
+    return (
+      <EmptyState />
     )
   }
 

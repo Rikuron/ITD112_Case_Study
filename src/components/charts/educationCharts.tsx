@@ -13,6 +13,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 import { useParseEducationData } from '../../hooks/useParseEducationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { COLUMN_ORDERS } from '../../utils/columnOrders'
@@ -68,6 +69,13 @@ const EducationCharts = () => {
         <p className="font-bold">Error:</p>
         <p>{error}</p>
       </div>
+    )
+  }
+
+  // Check if no data is available
+  if (chartData.length === 0 || educationLevels.length === 0) {
+    return (
+      <EmptyState />
     )
   }
 

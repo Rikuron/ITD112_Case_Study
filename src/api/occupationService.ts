@@ -4,6 +4,7 @@ import {
   getAllData,
   updateDataByYear,
   deleteDataByYear,
+  deleteAllData,
   getAvailableYears,
   getCategories
 } from './baseService'
@@ -53,6 +54,11 @@ export const updateOccupationData = async (year: number, updates: Partial<Omit<O
 // DELETE
 export const deleteOccupationData = async (year: number) => {
   await deleteDataByYear(OCCUPATION_COLLECTION, year)
+}
+
+// DELETE ALL
+export const deleteAllOccupationData = async () => {
+  await deleteAllData(OCCUPATION_COLLECTION)
 }
 
 // GET all available years

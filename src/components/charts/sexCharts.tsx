@@ -12,6 +12,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 import { ResponsiveBar } from '@nivo/bar'
 import { useParseSexData } from '../../hooks/useParseSexData'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -50,6 +51,13 @@ const SexCharts = () => {
         <p className="font-bold">⚠️ Error Loading Data</p>
         <p>{error}</p>
       </div>
+    )
+  }
+
+  // Check if no data is available
+  if (chartData.length === 0 || sexCategories.length === 0) {
+    return (
+      <EmptyState />
     )
   }
 

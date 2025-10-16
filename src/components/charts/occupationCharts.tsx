@@ -10,6 +10,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 import { useParseOccupationData } from '../../hooks/useParseOccupationData'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import TreemapNivo from './treemapNivo'
@@ -51,6 +52,13 @@ const OccupationCharts = () => {
       </div>
     )
   }  
+
+  // Check if no data is available
+  if (chartData.length === 0 || occupations.length === 0) {
+    return (
+      <EmptyState />
+    )
+  }
 
   const colors = [
     '#1e90ff', '#32cd32', '#ff8c00', '#8a2be2', '#ff1493', 

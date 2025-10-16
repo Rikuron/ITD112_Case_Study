@@ -13,6 +13,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import LoadingScreen from '../loadingScreen'
+import EmptyState from '../emptyState'
 import { useParseCivilStatusData } from '../../hooks/useParseCivilStatusData'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { COLUMN_ORDERS } from '../../utils/columnOrders'
@@ -58,6 +59,13 @@ const CivilStatusCharts = () => {
         <p className="font-bold">⚠️ Error Loading Data</p>
         <p>{error}</p>
       </div>
+    )
+  }
+
+  // Check if no data is available
+  if (chartData.length === 0 || civilStatusCategories.length === 0) {
+    return (
+      <EmptyState />
     )
   }
 
