@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 interface EmptyStateProps {
   title?: string
   message?: string
@@ -18,12 +20,12 @@ export default function EmptyState({
         <p className="font-bold text-2xl mb-3">{title}</p>
         <p className="text-lg mb-4">{message}</p>
         {showUploadLink && (
-          <a 
-            href="/uploadData" 
+          <Link 
+            to="/uploadData" 
             className="inline-block bg-highlights hover:opacity-90 text-white font-semibold py-2 px-6 rounded-lg transition-opacity"
           >
             Go to Upload Page
-          </a>
+          </Link>
         )}
       </div>
     </div>
