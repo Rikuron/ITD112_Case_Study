@@ -311,7 +311,10 @@ const SexCharts = () => {
                   type="number" 
                   dataKey = "x"
                   name="Year"
-                  domain={[1981, 2020]}
+                  domain={[
+                    chartData.length > 0 ? Math.min(...chartData.map(d => d.YEAR)) : 1981, 
+                    chartData.length > 0 ? Math.max(...chartData.map(d => d.YEAR)) : 2020
+                  ]}
                   tickCount={25}
                   tickFormatter = {(value) => `'${value.toString().slice(-2)}`}
                 />

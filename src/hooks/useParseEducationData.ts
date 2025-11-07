@@ -70,8 +70,12 @@ export const useParseEducationData = (): UseParseEducationDataReturn => {
     allEducationLevels: string[]
   ): GroupedEducationData[] => {
     const groupedData: GroupedEducationData[] = []
-    const startYear = 1988
-    const endYear = 2020
+    const startYear = transformed.length > 0
+      ? Math.min(...transformed.map(d => d.Year))
+      : 1988
+    const endYear = transformed.length > 0
+      ? Math.max(...transformed.map(d => d.Year))
+      : 2020
 
     for (let year = startYear; year <= endYear; year += 3) {
       const periodEnd = Math.min(year + 2, endYear)

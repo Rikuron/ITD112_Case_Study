@@ -70,8 +70,12 @@ export const useParseAgeData = (): UseParseAgeDataReturn => {
     allAgeGroups: string[]
   ): GroupedAgeData[] => {
     const groupedData: GroupedAgeData[] = []
-    const startYear = 1981
-    const endYear = 2020
+    const startYear = transformed.length > 0
+      ? Math.min(...transformed.map(d => d.Year))
+      : 1981
+    const endYear = transformed.length > 0
+      ? Math.max(...transformed.map(d => d.Year))
+      : 2020
 
     for (let year = startYear; year <= endYear; year += 5) {
       const periodEnd = Math.min(year + 4, endYear)

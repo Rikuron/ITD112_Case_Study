@@ -31,6 +31,14 @@ const ChoroplethMap = () => {
     })
   }, [mapData])
 
+  const yearRange = useMemo(() => {
+    if (mapData.length === 0) return { min: 1988, max: 2020 }
+    return {
+      min: Math.min(...years),
+      max: Math.max(...years)
+    }
+  }, [years])
+
   if (geoError) return (
     <div className="bg-red-500/20 border border-red-500 text-red-300 rounded-lg p-4 m-8">
       <p className="font-bold">⚠️ Error Loading Data</p>
@@ -51,7 +59,7 @@ const ChoroplethMap = () => {
     <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
       <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
         {selectedYear === 'all' 
-          ? 'Emigrant Destination of Filipinos by Country (1981 - 2020)' 
+          ? `Emigrant Destination of Filipinos by Country (${yearRange.min} - ${yearRange.max})` 
           : `Emigrant Destination of Filipinos by Country in ${selectedYear}`
         }
       </h2>
@@ -63,7 +71,7 @@ const ChoroplethMap = () => {
           onChange={onSelectChange}
           className="px-4 py-2 bg-secondary border border-highlights rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-highlights"
         >
-          <option value="all">All Years (1981-2020)</option>
+          <option value="all">All Years ({yearRange.min} - {yearRange.max})</option>
           {years.map(year => (
             <option key={year} value={year}>{year}</option>
           ))}

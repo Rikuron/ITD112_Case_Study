@@ -31,6 +31,13 @@ const DestinationCharts = () => {
   }, [countries])
 
   const years = useMemo(() => ['All Years', ...chartData.map(d => d.YEAR)], [chartData])
+  const yearRange = useMemo(() => {
+    if (chartData.length === 0) return { min: 1981, max: 2020 }
+    return {
+      min: Math.min(...chartData.map(d => d.YEAR)),
+      max: Math.max(...chartData.map(d => d.YEAR))
+    }
+  }, [chartData])
 
   const singleYearData = useMemo(() => {
     if (selectedYear === 'All Years') return []
@@ -82,7 +89,7 @@ const DestinationCharts = () => {
 
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By MAJOR Destination Country (1981 - 2020)</h2>
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By MAJOR Destination Country ({yearRange.min} - {yearRange.max})</h2>
         
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
           {COLUMN_ORDERS.majorDestination.map(country => (
@@ -142,7 +149,7 @@ const DestinationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
       <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
           {selectedYear === 'All Years'
-            ? 'Emigrants by MAJOR Destination Country (1981 - 2020)'
+            ? `Emigrants by MAJOR Destination Country (${yearRange.min} - ${yearRange.max})`
             : `Emigrant Population by MAJOR Destination Country in ${selectedYear}`}
         </h2>
                 

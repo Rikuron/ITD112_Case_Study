@@ -30,6 +30,13 @@ const EducationCharts = () => {
   }, [educationLevels])
 
   const years = useMemo(() => ['All Years', ...chartData.map(d => d.Year)], [chartData])
+  const yearRange = useMemo(() => {
+    if (chartData.length === 0) return { min: 1988, max: 2020 }
+    return {
+      min: Math.min(...chartData.map(d => d.Year)),
+      max: Math.max(...chartData.map(d => d.Year))
+    }
+  }, [chartData])
 
   const singleYearData = useMemo(() => {
     if (selectedYear === 'All Years') return []
@@ -88,7 +95,7 @@ const EducationCharts = () => {
     <div className="grid grid-cols-1 gap-8">
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Education Level (1988 - 2020)</h2>
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Education Level ({yearRange.min} - {yearRange.max})</h2>
 
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
           {COLUMN_ORDERS.education.map(educationLevel => (
@@ -148,7 +155,7 @@ const EducationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
           {selectedYear === 'All Years'
-            ? 'Emigrants by Education Level (1988 - 2020)'
+            ? `Emigrants by Education Level (${yearRange.min} - ${yearRange.max})`
             : `Emigrant Population by Education Level in ${selectedYear}`}
         </h2>
         

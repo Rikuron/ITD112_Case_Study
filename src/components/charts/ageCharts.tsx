@@ -30,6 +30,13 @@ const AgeCharts = () => {
   }, [ageGroups])  
 
   const years = useMemo(() => ['All Years', ...chartData.map(d => d.Year)], [chartData])
+  const yearRange = useMemo(() => {
+    if (chartData.length === 0) return { min: 1981, max: 2020 }
+    return {
+      min: Math.min(...chartData.map(d => d.Year)),
+      max: Math.max(...chartData.map(d => d.Year))
+    }
+  }, [chartData])
 
   const singleYearData = useMemo(() => {
     if (selectedYear === 'All Years') return []
@@ -79,7 +86,7 @@ const AgeCharts = () => {
     <div className="grid grid-cols-1 gap-8">
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Age Group (1981 - 2020)</h2>
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Age Group ({yearRange.min} - {yearRange.max})</h2>
 
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
           {COLUMN_ORDERS.age.map(ageGroup => (
@@ -139,7 +146,7 @@ const AgeCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
           {selectedYear === 'All Years'
-            ? 'Emigrants by Age Group (1981 - 2020)'
+            ? `Emigrants by Age Group (${yearRange.min} - ${yearRange.max})`
             : `Emigrant Population by Age Group in ${selectedYear}`}
         </h2>
     

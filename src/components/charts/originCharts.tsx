@@ -30,6 +30,13 @@ const OriginCharts = () => {
   }, [regions])
 
   const years = useMemo(() => ['All Years', ...chartData.map(d => d.YEAR)], [chartData])
+  const yearRange = useMemo(() => {
+    if (chartData.length === 0) return { min: 1988, max: 2020 }
+    return {
+      min: Math.min(...chartData.map(d => d.YEAR)),
+      max: Math.max(...chartData.map(d => d.YEAR))
+    }
+  }, [chartData])
 
   // Function to extract region shorthand
   const getRegionShorthand = (fullRegion: string): string => {
@@ -153,7 +160,7 @@ const OriginCharts = () => {
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
-          Emigration Trends By Region of Origin (1988 - 2020)
+          Emigration Trends By Region of Origin ({yearRange.min} - {yearRange.max})
         </h2>
 
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
@@ -227,7 +234,7 @@ const OriginCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
           {selectedYear === 'All Years'
-            ? 'Total Emigrants by Region (1988 - 2020)'
+            ? `Total Emigrants by Region (${yearRange.min} - ${yearRange.max})`
             : `Total Emigrants by Region in ${selectedYear}`}
         </h2>
 

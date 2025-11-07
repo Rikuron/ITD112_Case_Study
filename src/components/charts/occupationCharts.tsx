@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   LineChart,
   Line,
@@ -27,6 +27,14 @@ const OccupationCharts = () => {
   useEffect(() => {
     if (occupations.length > 0) setSelectedOccupations(occupations)
   }, [occupations])
+
+  const yearRange = useMemo(() => {
+    if (chartData.length === 0) return { min: 1981, max: 2020 }
+    return {
+      min: Math.min(...years),
+      max: Math.max(...years)
+    }
+  }, [years])
 
   // Occupation Checkbox handler for Line Chart
   const handleOccupationChange = (occupation: string) => {
@@ -70,7 +78,7 @@ const OccupationCharts = () => {
     <div className="grid grid-cols-1 gap-8">
       {/* Line Chart */}
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Occupation (1981 - 2020)</h2>
+        <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">Emigration Trends By Occupation ({yearRange.min} - {yearRange.max})</h2>
         
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-white">
           {COLUMN_ORDERS.occupation.map(occupation => (
@@ -133,7 +141,7 @@ const OccupationCharts = () => {
       <div className="bg-primary rounded-lg shadow-md p-6 border-2 border-highlights">
         <h2 className="text-lg text-center font-inter text-stroke text-white mb-4">
           {selectedYear === 'all'
-            ? 'Total Emigration Composition By Occupation Category (1981 - 2020)'
+            ? `Total Emigration Composition By Occupation Category (${yearRange.min} - ${yearRange.max})`
             : `Total Emigration Composition By Occupation Category in ${selectedYear}`}
         </h2>
         
@@ -146,7 +154,7 @@ const OccupationCharts = () => {
             onChange={handleYearChange}
             className="bg-primary border border-highlights text-white rounded p-2 font-inter"
           >
-            <option value="all">All Years (1981-2020)</option>
+            <option value="all">All Years ({yearRange.min} - {yearRange.max})</option>
             {years.map(year => (
               <option key={year} value={year}>{year}</option>
             ))}

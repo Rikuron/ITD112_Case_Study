@@ -72,8 +72,12 @@ export const useParseCivilStatusData = (): UseParseCivilStatusDataReturn => {
 
       // Group data into 3 year periods for Bar Chart
       const groupedData: GroupedCivilStatusData[] = []
-      const startYear = 1988
-      const endYear = 2020
+      const startYear = transformed.length > 0
+        ? Math.min(...transformed.map(d => d.YEAR))
+        : 1988
+      const endYear = transformed.length > 0
+        ? Math.max(...transformed.map(d => d.YEAR))
+        : 2020
 
       for (let year = startYear; year <= endYear; year += 3) {
         const periodEnd = Math.min(year + 2, endYear)
