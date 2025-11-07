@@ -16,13 +16,13 @@ import {
   addNewRegionYear, getAllRegionData, getRegionDataByYear, updateRegionData, deleteRegionData, deleteAllProvinceData, 
   addNewProvinceYear, getAllProvinceData, getProvinceDataByYear, getProvinces, updateProvinceData, deleteProvinceData, deleteAllRegionData
 } from '../api/originService'
-import { FaPlus } from 'react-icons/fa'
+import { FaPlus, FaTrash } from 'react-icons/fa'
+import DataTypeTabs from '../components/dataTypeTabs'
+import type { DataType } from '../components/dataTypeTabs'
 
 export const Route = createFileRoute('/manageData') ({
   component: ManageData
 })
-
-type DataType = 'age' | 'civilStatus' | 'majorDestination' | 'allDestination' | 'education' | 'occupation' | 'sex' | 'region' | 'province'
 
 // Column order helper function
 const getOrderedColumns = (dataType: DataType, data: any[]): string[] => {
@@ -480,45 +480,45 @@ function ManageData() {
     <div className="container mx-auto p-6">
       <h1 className="text-4xl font-bold text-white mb-6">Manage Data</h1>
 
-      <div className="flex justify-between items-end">
-        {/* Data Type Selector */}
-        <div className="mb-6">
-          <label className="block text-white font-semibold mb-2">Select Data Type:</label>
-          <select
-            value={selectedDataType ?? ''}
-            onChange={(e) => setSelectedDataType(e.target.value as DataType)}
-            className="w-[75%] text-sm md:text-base px-4 py-2 bg-secondary text-white border border-highlights rounded-lg"
-          >
-            <option value="age">Age Data</option>
-            <option value="sex">Sex Data</option>
-            <option value="civilStatus">Civil Status Data</option>
-            <option value="education">Education Data</option>
-            <option value="occupation">Occupation Data</option>
-            <option value="majorDestination">Major Destination Data</option>
-            <option value="allDestination">All Destination Data</option>
-            <option value="region">Region Data</option>
-            <option value="province">Province Data</option>
-          </select>
-        </div>
+      <div className="w-full md:w-auto md:flex-1">
+        <label className="block text-white font-semibold mb-2">Select Data Type:</label>
+        <DataTypeTabs
+          selectedDataType={selectedDataType}
+          onDataTypeChange={setSelectedDataType}
+          dataTypes={[
+            'age',
+            'sex',
+            'civilStatus',
+            'education',
+            'occupation',
+            'majorDestination',
+            'allDestination',
+            'region',
+            'province'
+          ]}
+        />
+      </div>
 
+      <div className="flex justify-between items-start flex-col md:flex-row gap-4 mb-6">
         {/* Add New Year Button */}
         {canEdit && (
-          <div className="mb-6 flex gap-2 justify-end w-[50%]">
+          <div className="flex gap-2 justify-end w-full md:w-auto">
             <button
               onClick={handleOpenAddModal}
               disabled={loading}
-              className="flex flex-col md:flex-row items-center gap-1 text-xs md:text-base px-1.5 py-2 md:px-6 md:py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 disabled:opacity-50 font-semibold border-2 border-green-500 transition-colors cursor-pointer"
+              className="flex flex-row items-center gap-1 text-xs md:text-base px-1.5 py-2 md:px-6 md:py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 disabled:opacity-50 font-semibold border-2 border-green-500 transition-colors cursor-pointer"
             >
-              <FaPlus /> Add <span className="hidden md:inline">New Year</span>
+              <FaPlus className="text-sm md:text-base" /> 
+              <span>Add New Year Data</span>
             </button>
             {/* Delete All Button (Admin Only) */}
             {canDelete && data.length > 0 && (
               <button
                 onClick={handleDeleteAll}
                 disabled={loading}
-                className="flex flex-col md:flex-row items-center gap-1 text-xs md:text-base px-1.5 py-2 md:px-6 md:py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50 font-semibold border-2 border-red-500 transition-colors cursor-pointer"
+                className="flex flex-row items-center gap-1 text-xs md:text-base m-auto px-1.5 py-2 md:px-6 md:py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50 font-semibold border-2 border-red-500 transition-colors cursor-pointer"
               >
-                🗑️ <span>Delete</span> <span className="hidden md:inline">All {selectedDataType.replace(/([A-Z])/g, ' $1').trim()} Data</span>
+                <FaTrash /> Delete All {selectedDataType.replace(/([A-Z])/g, ' $1').trim()} Data
               </button>
             )}
           </div>
