@@ -122,24 +122,71 @@ function PredictionsPage() {
         {/* Controls Card */}
         <div className="bg-secondary rounded-lg shadow-md p-6 border-2 border-highlights mb-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Year Selector */}
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-              <label htmlFor="years-ahead" className="text-white font-inter font-medium whitespace-nowrap">
+            {/* Year Selector - Enhanced */}
+            <div className="flex flex-col gap-4 w-full md:w-auto">
+              <label htmlFor="years-ahead" className="text-white font-inter font-medium text-center md:text-left">
                 Predict for the next:
               </label>
-              <div className="flex items-center gap-3">
-                <input
-                  id="years-ahead"
-                  type="range"
-                  min={1}
-                  max={10}
-                  value={yearsAhead}
-                  onChange={(e) => setYearsAhead(Number(e.target.value))}
-                  className="w-48 h-2 bg-primary rounded-lg appearance-none cursor-pointer accent-highlights"
-                />
-                <span className="text-highlights font-bold font-inter text-xl min-w-[80px]">
-                  {yearsAhead} {yearsAhead === 1 ? 'year' : 'years'}
-                </span>
+              
+              <div className="flex flex-col gap-2">
+                {/* Slider with visual markers */}
+                <div className="relative px-2">
+                  <input
+                    id="years-ahead"
+                    type="range"
+                    min={1}
+                    max={10}
+                    step={1}
+                    value={yearsAhead}
+                    onChange={(e) => setYearsAhead(Number(e.target.value))}
+                    className="w-full h-2 bg-primary rounded-lg appearance-none cursor-pointer 
+                               [&::-webkit-slider-thumb]:appearance-none
+                               [&::-webkit-slider-thumb]:w-5
+                               [&::-webkit-slider-thumb]:h-5
+                               [&::-webkit-slider-thumb]:rounded-full
+                               [&::-webkit-slider-thumb]:bg-highlights
+                               [&::-webkit-slider-thumb]:cursor-pointer
+                               [&::-webkit-slider-thumb]:shadow-lg
+                               [&::-webkit-slider-thumb]:shadow-highlights/50
+                               [&::-webkit-slider-thumb]:transition-transform
+                               [&::-webkit-slider-thumb]:hover:scale-110
+                               [&::-moz-range-thumb]:w-5
+                               [&::-moz-range-thumb]:h-5
+                               [&::-moz-range-thumb]:rounded-full
+                               [&::-moz-range-thumb]:bg-highlights
+                               [&::-moz-range-thumb]:border-0
+                               [&::-moz-range-thumb]:cursor-pointer"
+                  />
+                  
+                  {/* Tick marks */}
+                  <div className="flex justify-between px-0.5 mt-1">
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => setYearsAhead(num)}
+                        className={`
+                          w-6 h-6 text-xs rounded-full transition-all duration-200
+                          ${yearsAhead === num 
+                            ? 'bg-highlights text-white font-bold scale-110' 
+                            : 'bg-primary/50 text-gray-400 hover:bg-highlights/30 hover:text-white'
+                          }
+                        `}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Current selection display */}
+                <div className="text-center">
+                  <span className="text-highlights font-bold font-inter text-2xl">
+                    {yearsAhead}
+                  </span>
+                  <span className="text-gray-400 font-inter ml-2">
+                    {yearsAhead === 1 ? 'year' : 'years'} into the future
+                  </span>
+                </div>
               </div>
             </div>
 

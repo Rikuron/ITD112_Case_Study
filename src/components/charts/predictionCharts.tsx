@@ -12,12 +12,24 @@ import {
 } from 'recharts'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import type { PredictionResult } from '../../api/predictionService'
+import { COLUMN_ORDERS } from '../../utils/columnOrders'
 
 interface PredictionChartsProps {
   category: string
   categoryLabel: string
   historicalData: Array<{ Year: number; [key: string]: number }>
   predictions: PredictionResult[]
+}
+
+// Map category keys to COLUMN_ORDERS keys
+const CATEGORY_TO_ORDER_KEY: Record<string, keyof typeof COLUMN_ORDERS> = {
+  age: 'age',
+  civil_status: 'civilStatus',
+  destination: 'majorDestination',
+  education: 'education',
+  occupation: 'occupation',
+  sex: 'sex',
+  origin: 'region'
 }
 
 // Vibrant color palette
@@ -38,30 +50,34 @@ const COLORS = [
   '#FBBF24', // yellow
 ]
 
-const PredictionCharts = ({ categoryLabel, historicalData, predictions }: PredictionChartsProps) => {
+const PredictionCharts = ({ category, categoryLabel, historicalData, predictions }: PredictionChartsProps) => {
   const isMobile = useIsMobile()
+
+  // Get the column order for this category
+  const columnOrder = useMemo(() => {
+    const orderKey = CATEGORY_TO_ORDER_KEY[category]
+    return orderKey ? COLUMN_ORDERS[orderKey] : []
+  }, [category])
 
   // Get feature names from historical data
   const features = useMemo(() => {
     if (historicalData.length === 0) return []
-    return Object.keys(historicalData[0]).filter(key => key !== 'Year')
-  }, [historicalData])
+    const allFeatures = Object.keys(historicalData[0]).filter(key => key !== 'Year')
 
-  // Combine historical and predicted data
-  const combinedData = useMemo(() => {
-    const historical = historicalData.map(item => ({
-      ...item,
-      isPrediction: false
-    }))
+    // Sort features by column order
+    if (columnOrder.length > 0) {
+      return allFeatures.sort((a, b) => {
+        const indexA = columnOrder.indexOf(a)
+        const indexB = columnOrder.indexOf(b)
 
-    const predicted = predictions.map(pred => ({
-      Year: pred.year,
-      ...pred.predictions,
-      isPrediction: true
-    }))
-
-    return [...historical, ...predicted]
-  }, [historicalData, predictions])
+        // If not found in order, put at the end
+        const orderA = indexA === -1 ? 999 : indexA
+        const orderB = indexB === -1 ? 999 : indexB
+        return orderA - orderB
+      })
+    }
+    return allFeatures
+  }, [historicalData, columnOrder])
 
   // Get the last historical year for the reference line
   const lastHistoricalYear = useMemo(() => {
@@ -69,31 +85,63 @@ const PredictionCharts = ({ categoryLabel, historicalData, predictions }: Predic
     return Math.max(...historicalData.map(d => d.Year))
   }, [historicalData])
 
+  // Create unified chart data with separate keys for historical and predicted
+  const chartData = useMemo(() => {
+    // Historical data - use feature names directly
+    const historical = historicalData.map(item => {
+      const dataPoint: Record<string, any> = { Year: item.Year, type: 'historical' }
+      features.forEach(feature => {
+        dataPoint[feature] = item[feature]
+        dataPoint[`${feature}_pred`] = null // null for predicted in historical range
+      })
+      return dataPoint
+    })
+
+    // Bridge point - last historical year with both values for smooth connection
+    const bridgePoint = historical.length > 0 ? (() => {
+      const lastHistorical = historical[historical.length - 1]
+      const bridge: Record<string, any> = { Year: lastHistorical.Year, type: 'bridge' }
+      features.forEach(feature => {
+        bridge[feature] = lastHistorical[feature]
+        bridge[`${feature}_pred`] = lastHistorical[feature] // Same value for connection
+      })
+      return bridge
+    })() : null
+
+    // Predicted data - use _pred suffix
+    const predicted = predictions.map(pred => {
+      const dataPoint: Record<string, any> = { Year: pred.year, type: 'predicted' }
+      features.forEach(feature => {
+        dataPoint[feature] = null // null for historical in predicted range
+        dataPoint[`${feature}_pred`] = pred.predictions[feature] ?? null
+      })
+      return dataPoint
+    })
+
+    // Remove the duplicate bridge year from historical if it exists
+    const historicalWithoutLast = historical.slice(0, -1)
+    
+    return bridgePoint 
+      ? [...historicalWithoutLast, bridgePoint, ...predicted]
+      : [...historical, ...predicted]
+  }, [historicalData, predictions, features])
+
   // Year range for title
   const yearRange = useMemo(() => {
-    if (combinedData.length === 0) return { min: 0, max: 0 }
+    if (chartData.length === 0) return { min: 0, max: 0 }
     return {
-      min: Math.min(...combinedData.map(d => d.Year)),
-      max: Math.max(...combinedData.map(d => d.Year))
+      min: Math.min(...chartData.map(d => d.Year)),
+      max: Math.max(...chartData.map(d => d.Year))
     }
-  }, [combinedData])
+  }, [chartData])
 
-  if (features.length === 0 || combinedData.length === 0) {
+  if (features.length === 0 || chartData.length === 0) {
     return (
       <div className="bg-secondary rounded-lg shadow-md p-6 border-2 border-highlights text-center">
         <p className="text-gray-400 font-inter">No data available for {categoryLabel}</p>
       </div>
     )
   }
-
-  // Create separate datasets for historical and predicted
-  const historicalChartData = combinedData.filter(d => !d.isPrediction)
-  const predictedChartData = combinedData.filter(d => d.isPrediction)
-
-  // For smooth transition, include last historical point in predicted data
-  const predictedWithBridge = lastHistoricalYear 
-    ? [historicalChartData[historicalChartData.length - 1], ...predictedChartData]
-    : predictedChartData
 
   return (
     <div className="space-y-8">
@@ -103,13 +151,13 @@ const PredictionCharts = ({ categoryLabel, historicalData, predictions }: Predic
           {categoryLabel} - Historical & Predicted Trends
         </h2>
         <p className="text-center text-gray-400 text-sm mb-4 font-inter">
-          {yearRange.min} - {yearRange.max} (Predictions shown as dashed lines after {lastHistoricalYear})
+          {yearRange.min} - {yearRange.max} • <span className="text-highlights">Dashed lines</span> = Predictions after {lastHistoricalYear}
         </p>
 
         <div className={isMobile ? "overflow-x-auto" : ""}>
           <div style={{ minWidth: isMobile ? '900px' : 'auto' }}>
             <ResponsiveContainer width="100%" height={500}>
-              <LineChart data={combinedData}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
                 <XAxis 
                   dataKey="Year" 
@@ -117,6 +165,7 @@ const PredictionCharts = ({ categoryLabel, historicalData, predictions }: Predic
                   textAnchor="end" 
                   height={70}
                   tick={{ fill: '#9CA3AF' }}
+                  tickFormatter={(value) => value.toString()}
                 />
                 <YAxis tick={{ fill: '#9CA3AF' }} />
                 <Tooltip
@@ -135,24 +184,43 @@ const PredictionCharts = ({ categoryLabel, historicalData, predictions }: Predic
                     marginBottom: '8px'
                   }}
                   labelFormatter={(label) => {
-                    const dataPoint = combinedData.find(d => d.Year === label)
-                    const suffix = dataPoint?.isPrediction ? ' (Predicted)' : ''
+                    const dataPoint = chartData.find(d => d.Year === label)
+                    const suffix = dataPoint?.type === 'predicted' ? ' (Predicted)' : ''
                     return `Year: ${label}${suffix}`
                   }}
+                  formatter={(value: any, name: string) => {
+                    if (value === null) return [null, null]
+                    const cleanName = name.replace('_pred', '')
+                    const isPredicted = name.includes('_pred')
+                    return [
+                      value?.toLocaleString() ?? '-',
+                      isPredicted ? `${cleanName} (Pred)` : cleanName
+                    ]
+                  }}
+                  itemSorter={(item) => -(item.value || 0)}
                 />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                <Legend 
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  formatter={(value) => {
+                    // Only show base feature names, hide _pred versions
+                    if (value.includes('_pred')) return null
+                    return value
+                  }}
+                />
                 
                 {/* Reference line at prediction start */}
                 {lastHistoricalYear && (
                   <ReferenceLine 
                     x={lastHistoricalYear} 
                     stroke="#3661E2" 
+                    strokeWidth={2}
                     strokeDasharray="5 5"
                     label={{ 
-                      value: 'Predictions Start', 
+                      value: '← Historical | Predicted →', 
                       position: 'top',
                       fill: '#3661E2',
-                      fontSize: 12
+                      fontSize: 11,
+                      fontWeight: 'bold'
                     }}
                   />
                 )}
@@ -163,12 +231,11 @@ const PredictionCharts = ({ categoryLabel, historicalData, predictions }: Predic
                     key={`historical-${feature}`}
                     type="monotone"
                     dataKey={feature}
-                    data={historicalChartData}
                     stroke={COLORS[index % COLORS.length]}
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     dot={false}
                     name={feature}
-                    connectNulls
+                    connectNulls={false}
                   />
                 ))}
 
@@ -177,14 +244,14 @@ const PredictionCharts = ({ categoryLabel, historicalData, predictions }: Predic
                   <Line
                     key={`predicted-${feature}`}
                     type="monotone"
-                    dataKey={feature}
-                    data={predictedWithBridge}
+                    dataKey={`${feature}_pred`}
                     stroke={COLORS[index % COLORS.length]}
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     strokeDasharray="8 4"
-                    dot={{ fill: COLORS[index % COLORS.length], strokeWidth: 2, r: 4 }}
-                    name={`${feature} (Predicted)`}
-                    connectNulls
+                    dot={{ fill: COLORS[index % COLORS.length], strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7, stroke: '#fff', strokeWidth: 2 }}
+                    name={`${feature}_pred`}
+                    connectNulls={false}
                     legendType="none"
                   />
                 ))}
@@ -192,38 +259,66 @@ const PredictionCharts = ({ categoryLabel, historicalData, predictions }: Predic
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Legend explanation */}
+        <div className="flex justify-center gap-6 mt-4 text-sm text-gray-400">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-0.5 bg-violet-500"></div>
+            <span>Historical Data</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-0.5 bg-violet-500 border-dashed" style={{ borderTop: '2px dashed #8B5CF6' }}></div>
+            <span>Predicted Data</span>
+          </div>
+        </div>
       </div>
 
       {/* Predictions Summary Table */}
       <div className="bg-secondary rounded-lg shadow-md p-6 border-2 border-highlights">
-        <h3 className="text-lg font-inter text-white mb-4 text-stroke">
+      <h3 className="text-lg font-inter text-white mb-2 text-stroke">
           Predicted Values Summary
         </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-gray-400 border-b border-highlights/30">
+        <p className="text-gray-400 text-sm mb-4">
+          {features.length} categories • Scroll horizontally to see all →
+        </p>
+        <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+          <table className="w-full text-sm text-left border-collapse min-w-max">
+            <thead className="text-gray-400 border-b border-highlights/30 sticky top-0 bg-secondary z-10">
               <tr>
-                <th className="px-4 py-3 font-inter">Year</th>
-                {features.slice(0, 6).map(feature => (
-                  <th key={feature} className="px-4 py-3 font-inter truncate max-w-[120px]" title={feature}>
-                    {feature}
+                <th className="px-3 py-3 font-inter font-semibold text-highlights sticky left-0 bg-secondary z-20 min-w-[70px]">
+                  Year
+                </th>
+                {features.map((feature, idx) => (
+                  <th 
+                    key={feature} 
+                    className="px-3 py-3 font-inter font-medium whitespace-nowrap"
+                    title={feature}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span 
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                      />
+                      <span>{feature}</span>
+                    </div>
                   </th>
                 ))}
-                {features.length > 6 && (
-                  <th className="px-4 py-3 font-inter text-highlights">+{features.length - 6} more</th>
-                )}
               </tr>
             </thead>
             <tbody className="text-gray-300">
               {predictions.map((pred, idx) => (
-                <tr key={pred.year} className={idx % 2 === 0 ? 'bg-primary/30' : ''}>
-                  <td className="px-4 py-3 font-bold text-highlights">{pred.year}</td>
-                  {features.slice(0, 6).map(feature => (
-                    <td key={feature} className="px-4 py-3">
+                <tr 
+                  key={pred.year} 
+                  className={`${idx % 2 === 0 ? 'bg-primary/30' : ''} hover:bg-highlights/10 transition-colors`}
+                >
+                  <td className="px-3 py-3 font-bold text-highlights sticky left-0 bg-secondary z-10">
+                    {pred.year}
+                  </td>
+                  {features.map(feature => (
+                    <td key={feature} className="px-3 py-3 whitespace-nowrap">
                       {pred.predictions[feature]?.toLocaleString() ?? '-'}
                     </td>
                   ))}
-                  {features.length > 6 && <td className="px-4 py-3 text-gray-500">...</td>}
                 </tr>
               ))}
             </tbody>
