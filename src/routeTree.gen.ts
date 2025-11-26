@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadDataRouteImport } from './routes/uploadData'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as PredictionsRouteImport } from './routes/predictions'
 import { Route as ManageDataRouteImport } from './routes/manageData'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const UploadDataRoute = UploadDataRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PredictionsRoute = PredictionsRouteImport.update({
+  id: '/predictions',
+  path: '/predictions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManageDataRoute = ManageDataRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/manageData': typeof ManageDataRoute
+  '/predictions': typeof PredictionsRoute
   '/register': typeof RegisterRoute
   '/uploadData': typeof UploadDataRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/manageData': typeof ManageDataRoute
+  '/predictions': typeof PredictionsRoute
   '/register': typeof RegisterRoute
   '/uploadData': typeof UploadDataRoute
 }
@@ -60,21 +68,42 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/manageData': typeof ManageDataRoute
+  '/predictions': typeof PredictionsRoute
   '/register': typeof RegisterRoute
   '/uploadData': typeof UploadDataRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/manageData' | '/register' | '/uploadData'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/manageData'
+    | '/predictions'
+    | '/register'
+    | '/uploadData'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/manageData' | '/register' | '/uploadData'
-  id: '__root__' | '/' | '/login' | '/manageData' | '/register' | '/uploadData'
+  to:
+    | '/'
+    | '/login'
+    | '/manageData'
+    | '/predictions'
+    | '/register'
+    | '/uploadData'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/manageData'
+    | '/predictions'
+    | '/register'
+    | '/uploadData'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   ManageDataRoute: typeof ManageDataRoute
+  PredictionsRoute: typeof PredictionsRoute
   RegisterRoute: typeof RegisterRoute
   UploadDataRoute: typeof UploadDataRoute
 }
@@ -93,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/predictions': {
+      id: '/predictions'
+      path: '/predictions'
+      fullPath: '/predictions'
+      preLoaderRoute: typeof PredictionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manageData': {
@@ -123,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   ManageDataRoute: ManageDataRoute,
+  PredictionsRoute: PredictionsRoute,
   RegisterRoute: RegisterRoute,
   UploadDataRoute: UploadDataRoute,
 }

@@ -3,6 +3,7 @@ import { AiFillDashboard } from 'react-icons/ai'
 import { HiUserAdd } from 'react-icons/hi'
 import { IoMenu } from 'react-icons/io5'
 import { FaDatabase } from 'react-icons/fa'
+import { GiCrystalBall } from 'react-icons/gi'
 import { useNavBar } from '../context/navBarContext'
 import { Link } from '@tanstack/react-router'
 import { useAuth } from '../context/authContext'
@@ -12,6 +13,11 @@ const navigationItems = [
     name: 'Dashboard',
     icon: <AiFillDashboard className="text-white text-2xl" />,
     path: '/',
+  },
+  {
+    name: 'Predictions',
+    icon: <GiCrystalBall className="text-white text-2xl" />,
+    path: '/predictions',
   },
   {
     name: 'Add Data',
