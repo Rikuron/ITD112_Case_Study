@@ -200,9 +200,11 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
                   itemSorter={(item) => -(item.value || 0)}
                 />
                 <Legend 
-                  wrapperStyle={{ paddingTop: '20px' }}
+                  wrapperStyle={{ 
+                    paddingTop: isMobile ? '8px' : '20px',
+                    marginTop: isMobile ? '-8px' : '0'
+                  }}
                   formatter={(value) => {
-                    // Only show base feature names, hide _pred versions
                     if (value.includes('_pred')) return null
                     return value
                   }}
@@ -285,7 +287,7 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
           <table className="w-full text-sm text-left border-collapse min-w-max">
             <thead className="text-gray-400 border-b border-highlights/30 sticky top-0 bg-secondary z-10">
               <tr>
-                <th className="px-3 py-3 font-inter font-semibold text-highlights sticky left-0 bg-secondary z-20 min-w-[70px]">
+                <th className="px-3 py-3 font-inter font-semibold text-highlights sticky left-0 top-0 bg-secondary z-30 min-w-[70px]">
                   Year
                 </th>
                 {features.map((feature, idx) => (
@@ -311,7 +313,7 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
                   key={pred.year} 
                   className={`${idx % 2 === 0 ? 'bg-primary/30' : ''} hover:bg-highlights/10 transition-colors`}
                 >
-                  <td className="px-3 py-3 font-bold text-highlights sticky left-0 bg-secondary z-10">
+                  <td className="px-3 py-3 font-bold text-highlights sticky left-0 bg-secondary z-20">
                     {pred.year}
                   </td>
                   {features.map(feature => (
