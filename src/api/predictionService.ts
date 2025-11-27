@@ -1,5 +1,5 @@
 // ML Prediction API Service
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5432'
+const API_BASE_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:5432'
 
 export interface PredictionResult {
   year: number
