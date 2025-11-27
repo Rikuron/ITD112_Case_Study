@@ -17,7 +17,7 @@ import { COLUMN_ORDERS } from '../../utils/columnOrders'
 interface PredictionChartsProps {
   category: string
   categoryLabel: string
-  historicalData: Array<{ Year: number; [key: string]: number }>
+  historicalData: Array<{ Year: number;[key: string]: number }>
   predictions: PredictionResult[]
 }
 
@@ -120,8 +120,8 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
 
     // Remove the duplicate bridge year from historical if it exists
     const historicalWithoutLast = historical.slice(0, -1)
-    
-    return bridgePoint 
+
+    return bridgePoint
       ? [...historicalWithoutLast, bridgePoint, ...predicted]
       : [...historical, ...predicted]
   }, [historicalData, predictions, features])
@@ -159,10 +159,10 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
             <ResponsiveContainer width="100%" height={500}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
-                <XAxis 
-                  dataKey="Year" 
-                  angle={-45} 
-                  textAnchor="end" 
+                <XAxis
+                  dataKey="Year"
+                  angle={-45}
+                  textAnchor="end"
                   height={70}
                   tick={{ fill: '#9CA3AF' }}
                   tickFormatter={(value) => value.toString()}
@@ -199,8 +199,8 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
                   }}
                   itemSorter={(item) => -(item.value || 0)}
                 />
-                <Legend 
-                  wrapperStyle={{ 
+                <Legend
+                  wrapperStyle={{
                     paddingTop: isMobile ? '8px' : '20px',
                     marginTop: isMobile ? '-8px' : '0'
                   }}
@@ -209,16 +209,16 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
                     return value
                   }}
                 />
-                
+
                 {/* Reference line at prediction start */}
                 {lastHistoricalYear && (
-                  <ReferenceLine 
-                    x={lastHistoricalYear} 
-                    stroke="#3661E2" 
+                  <ReferenceLine
+                    x={lastHistoricalYear}
+                    stroke="#3661E2"
                     strokeWidth={2}
                     strokeDasharray="5 5"
-                    label={{ 
-                      value: '← Historical | Predicted →', 
+                    label={{
+                      value: '← Historical | Predicted →',
                       position: 'top',
                       fill: '#3661E2',
                       fontSize: 11,
@@ -277,7 +277,7 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
 
       {/* Predictions Summary Table */}
       <div className="bg-secondary rounded-lg shadow-md p-6 border-2 border-highlights">
-      <h3 className="text-lg font-inter text-white mb-2 text-stroke">
+        <h3 className="text-lg font-inter text-white mb-2 text-stroke">
           Predicted Values Summary
         </h3>
         <p className="text-gray-400 text-sm mb-4">
@@ -285,19 +285,19 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
         </p>
         <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
           <table className="w-full text-sm text-left border-collapse min-w-max">
-            <thead className="text-gray-400 border-b border-highlights/30 sticky top-0 bg-secondary z-10">
+            <thead className="text-gray-400 border-b border-highlights/30 bg-secondary">
               <tr>
-                <th className="px-3 py-3 font-inter font-semibold text-highlights sticky left-0 top-0 bg-secondary z-30 min-w-[70px]">
+                <th className="px-3 py-3 font-inter font-semibold text-white sticky left-0 top-0 bg-highlights z-40 min-w-[70px] border border-secondary shadow-[4px_0_12px_rgba(54,97,226,0.5)]">
                   Year
                 </th>
                 {features.map((feature, idx) => (
-                  <th 
-                    key={feature} 
-                    className="px-3 py-3 font-inter font-medium whitespace-nowrap"
+                  <th
+                    key={feature}
+                    className="px-3 py-3 font-inter font-medium whitespace-nowrap sticky top-0 bg-secondary z-30"
                     title={feature}
                   >
                     <div className="flex items-center gap-2">
-                      <span 
+                      <span
                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: COLORS[idx % COLORS.length] }}
                       />
@@ -309,11 +309,11 @@ const PredictionCharts = ({ category, categoryLabel, historicalData, predictions
             </thead>
             <tbody className="text-gray-300">
               {predictions.map((pred, idx) => (
-                <tr 
-                  key={pred.year} 
+                <tr
+                  key={pred.year}
                   className={`${idx % 2 === 0 ? 'bg-primary/30' : ''} hover:bg-highlights/10 transition-colors`}
                 >
-                  <td className="px-3 py-3 font-bold text-highlights sticky left-0 bg-secondary z-20">
+                  <td className="px-3 py-3 font-bold text-white sticky left-0 bg-highlights z-20 border border-secondary shadow-[4px_0_12px_rgba(54,97,226,0.5)]">
                     {pred.year}
                   </td>
                   {features.map(feature => (
